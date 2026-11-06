@@ -3,7 +3,7 @@
 市场里有两条入口，读的是同一份目录：
 
 - **社区市场 `dshmarket`**（DSH 侧栏「插件市场」）：读 [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) 的精选目录。
-- **官方 Discover**：宿主里「插件 → 发现 → 索引源」可以加 `https://cdn.jsdelivr.net/npm/dsh-plugin-catalog/index.json`；这也是同一份目录的 format-1 索引。
+- **宿主 Discover**：宿主里「插件 → 发现 → 索引源」可以加 `https://cdn.jsdelivr.net/npm/dsh-plugin-catalog/index.json`；这是同一份目录的 format-1 索引（由 awesome-dsh-plugin 生成，不是官方内置索引）。
 
 所以标准做法是给 awesome-dsh-plugin 提 PR，不是给市场应用提 PR。
 
@@ -23,7 +23,7 @@ git push -u origin main
 
 - 给仓库加 **`dsh-plugin`** topic。
 - 仓库必须创建满 **1 天**才能过 CI（这是自动检查，不是人工评价）。
-- 如果你 GitHub 登录不是 `wunanfang`，先运行：
+- 如果你 GitHub 登录不是 `mutexz`，先运行：
 
 ```sh
 node scripts/set-owner.mjs <你的 GitHub 登录>
@@ -63,15 +63,15 @@ dsh plugin --profile <clean-profile> add github:<owner>/dsh-myself-preset
 data/plugins/<owner>__dsh-myself-preset.yml
 ```
 
-内容用本目录的 [同目录的 entry 文件](wunanfang__dsh-myself-preset.yml)（`set-owner` 会改名）。模板：
+内容用本目录的 [同目录的 entry 文件](mutexz__dsh-myself-preset.yml)（`set-owner` 会改名）。模板：
 
 ```yaml
 url: https://github.com/<owner>/dsh-myself-preset
 name: <owner>/dsh-myself-preset
 category: identity
 description:
-  en: Yugan Huafang (语感花房) is a personal voice workshop for DeepSeek Harness that turns your own writing and corrections into explainable local style rules, optionally distills them with the current model, and compiles the result into a switchable preset that applies on the next message.
-  zh: 语感花房是 DSH 的个人语气工作台：把你自己写的语料和纠正变成可解释的本地风格规则，可选当前模型深读，编译成下一句话生效的可切换 preset。
+  en: 'Yugan Huafang (语感花房) is a personal voice workshop for DeepSeek Harness: your own writing and corrections become explainable local style rules, optionally distilled by the current model, then compiled into a preset you pick per session; edits apply on the next message in that session.'
+  zh: '语感花房是 DSH 的个人语气工作台：把你自己写的语料和纠正变成可解释的本地风格规则，可选当前模型深读，编译成按会话选用的 preset；改完在该会话的下一句话生效。'
 icon: https://raw.githubusercontent.com/<owner>/dsh-myself-preset/main/assets/icon-180.png
 ```
 
@@ -112,7 +112,7 @@ npm publish --access public
 - `assets/icon-180.png` 是 GitHub 托管的位图图标；条目里的 `icon` 已指过去。
 - 图片只接受 GitHub 托管（`raw.githubusercontent.com` 等）；不要用第三方图床。
 
-## 6. 官方 Discover
+## 6. 宿主 Discover（社区索引）
 
 如果只想在本机 Discover 里先看到，不走市场：
 

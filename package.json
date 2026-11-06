@@ -17,6 +17,7 @@
     "./package.json": "./package.json"
   },
   "dsh": {
+    "manifestVersion": 1,
     "bundle": {
       "patch": "./cordis.patch.yml"
     },
@@ -35,8 +36,7 @@
     "preset",
     "client",
     "assets",
-    "docs",
-    "market",
+    "docs/design.md",
     "cordis.patch.yml",
     "screenshots.json",
     "README.md",
@@ -59,14 +59,14 @@
     "writing-style",
     "terrarium"
   ],
-  "author": "wunanfang",
+  "author": "mutexz",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wunanfang/dsh-myself-preset.git"
+    "url": "git+https://github.com/mutexz/dsh-myself-preset.git"
   },
-  "homepage": "https://github.com/wunanfang/dsh-myself-preset#readme",
+  "homepage": "https://github.com/mutexz/dsh-myself-preset#readme",
   "bugs": {
-    "url": "https://github.com/wunanfang/dsh-myself-preset/issues"
+    "url": "https://github.com/mutexz/dsh-myself-preset/issues"
   }
 }

@@ -17,12 +17,12 @@
 
 ## 安装
 
-前置：DeepSeek Harness 0.2.x（带 bundle 插件、`systemPrompt` 和 `llm` 服务）。插件没有构建步骤，安装后重启即可。
+前置：DeepSeek Harness 0.2.x（带 bundle 插件、`systemPrompt` 和 `llm` 服务）。插件没有构建步骤，安装后重启即可。已在 0.2.2-rc.1（Windows 11 / macOS 桌面版）上实测。
 
 从 GitHub 安装：
 
 ```sh
-dsh plugin --profile <profile> add github:wunanfang/dsh-myself-preset
+dsh plugin --profile <profile> add github:mutexz/dsh-myself-preset
 ```
 
 从市场安装：在社区插件市场 `dshmarket` 里搜索「语感花房」或 `dsh-myself-preset`，点安装。市场收录的是一条 [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) 条目，见 [market/SUBMISSION.md](market/SUBMISSION.md)。
@@ -108,7 +108,8 @@ node --test tests/*.test.js
 DSH 升级后如果 standard preset 增删了插件，重新生成 preset 列表：
 
 ```sh
-node scripts/gen-preset.mjs
+node scripts/gen-preset.mjs                       # PATH 里有 dsh 时
+DSH_BIN=/path/to/dsh node scripts/gen-preset.mjs  # 或用桌面版自带的 CLI
 ```
 
 ## 文件

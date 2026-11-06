@@ -129,13 +129,6 @@ window.__ModuleLoader__.load({
       subtitle: 'Specimen 001 · your voice',
     };
 
-    /** 没有 locale 座位时按文档语言兜底。 */
-    function makeFallbackT() {
-      const lang = String((typeof document !== 'undefined' && document.documentElement.lang) || '');
-      const dict = lang.toLowerCase().startsWith('zh') ? zh : { ...zh, ...en };
-      return (key) => dict[key] ?? key;
-    }
-
     /** 浏览器侧需要的服务。 */
     const inject = ['slots', 'locale'];
 
@@ -1716,7 +1709,9 @@ window.__ModuleLoader__.load({
     /** 插件入口：注册字典、侧栏入口与主区页面。 */
     function apply(ctx) {
       ensureStyles();
-      ctx.effect(() => ctx.locale.register(NS, { zh, en }), `${PLUGIN_ID}: dictionaries`);
+      // 正文是中文产品文案；英文界面只覆盖导航与标题，其余键回落到中文，
+      // 否则缺失的键会直接显示成 feedTitle 这样的裸 key。
+      ctx.effect(() => ctx.locale.register(NS, { zh, en: { ...zh, ...en } }), `${PLUGIN_ID}: dictionaries`);
       const t = ctx.locale.bind(NS);
 
       ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: PANEL_ID, locale: NS }, Page));

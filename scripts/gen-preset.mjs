@@ -8,20 +8,30 @@
  *
  * 生成结果会覆盖 cordis.patch.yml；页面插件行和注释保持不变。
  */
-import { execFileSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+// 桌面版默认路径只覆盖 macOS；Windows/Linux 用 PATH 里的 dsh，或用 DSH_BIN 指定。
 const dsh =
   process.env.DSH_BIN ??
-  '/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh';
+  (process.platform === 'darwin'
+    ? '/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh'
+    : 'dsh');
 
-const dump = execFileSync(dsh, ['--profile', 'web', '--dump-config'], {
-  encoding: 'utf8',
-  maxBuffer: 32 * 1024 * 1024,
-});
+/** 跑 --dump-config。Windows 的 dsh 是 .cmd，execFileSync 不能直接 spawn。 */
+function dumpConfig(command) {
+  const args = ['--profile', 'web', '--dump-config'];
+  const options = { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 };
+  if (process.platform === 'win32' && /\.(?:cmd|bat)$/iu.test(command)) {
+    return execSync(`"${command}" ${args.join(' ')}`, options);
+  }
+  return execFileSync(command, args, options);
+}
+
+const dump = dumpConfig(dsh);
 const lines = dump.split('\n');
 
 const start = lines.findIndex((line) => line.trim() === '- id: preset-standard');
@@ -66,7 +76,7 @@ const patch = `# dsh-myself-preset —— 一个 bundle 同时装两样东西：
       name: '@deepseek-ai/dsh-agent-preset'
       config:
         id: myself
-        name: 我自己
+        name: 像你
         description: 从你的语料和纠正里长出来的人格；页面里随时调。
         order: 35
 ${block}
