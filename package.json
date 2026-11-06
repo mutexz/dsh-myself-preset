@@ -1,0 +1,70 @@
+{
+  "name": "dsh-myself-preset",
+  "version": "0.1.0",
+  "description": "语感花房：投喂自己的语料和纠正，生成本地可解释的风格规则，可选模型深读，编译成可切换的 DSH preset，下一句话生效。",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./client/client.js"
+    },
+    "./preset": {
+      "default": "./preset/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar"
+      ]
+    }
+  },
+  "files": [
+    "lib",
+    "preset",
+    "client",
+    "assets",
+    "docs",
+    "market",
+    "cordis.patch.yml",
+    "screenshots.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "gen-preset": "node scripts/gen-preset.mjs",
+    "set-owner": "node scripts/set-owner.mjs"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "deepseek",
+    "preset",
+    "persona",
+    "writing-style",
+    "terrarium"
+  ],
+  "author": "wunanfang",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wunanfang/dsh-myself-preset.git"
+  },
+  "homepage": "https://github.com/wunanfang/dsh-myself-preset#readme",
+  "bugs": {
+    "url": "https://github.com/wunanfang/dsh-myself-preset/issues"
+  }
+}

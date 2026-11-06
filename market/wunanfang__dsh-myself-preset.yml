@@ -1,0 +1,7 @@
+url: https://github.com/wunanfang/dsh-myself-preset
+name: wunanfang/dsh-myself-preset
+category: identity
+description:
+  en: A personal voice workshop for DeepSeek Harness that turns your own writing and corrections into explainable local style rules, optionally distills them with the current model, and compiles the result into a switchable preset that applies on the next message.
+  zh: DSH 的个人语气工作台：把你自己写的语料和纠正变成可解释的本地风格规则，可选当前模型深读，编译成下一句话生效的可切换 preset。
+icon: https://raw.githubusercontent.com/wunanfang/dsh-myself-preset/main/assets/icon-180.png
