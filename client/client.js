@@ -49,34 +49,30 @@ window.__ModuleLoader__.load({
     const zh = {
       nav: '语感花房',
       title: '语感花房',
-      subtitle: '标本 001 · 你的语气',
       corpus: '语料',
       correction: '纠正',
       note: '直给',
       feedTitle: '标题',
-      feedTitleHint: '可选',
-      feedPlaceholder: '粘贴一段你写的东西……',
+      feedPlaceholder: '粘贴一段你写的东西',
       original: 'AI 原稿',
       originalPlaceholder: '把模型原来的回复贴在这里……',
       revised: '你的改写',
       revisedPlaceholder: '把它改成你会说的话……',
       notePlaceholder: '写一条明确规则，例如：别用“赋能 / 闭环”；先给结论；少用列表',
-      pour: '开始滋养',
-      pourCorrection: '投喂纠正',
+      pour: '保存并分析',
+      pourCorrection: '保存并对比',
       pourNote: '记下这条',
-      importFile: '从文件导入',
-      submitHint: '只在本地分析 · 立即生效',
-      shortcut: '⌘ ↵ 提交',
+      importFile: '导入文件',
       recent: '最近投喂',
-      emptyRecent: '还没有投喂。',
-      emptyTitle: '先喂一段你写的东西',
-      emptyNote: '或者从一段你改过的回复开始，本地分析，不联网。',
+      emptyRecent: '还没有记录',
       samples: '试一段示例',
       privacy: '语料只存在本机 · 深读/试音时才会发送给模型',
       privacyButton: '知道了',
       maturity: '成熟度',
       ready: '第一版成形',
       readyNote: '可以继续精炼',
+      plaqueGrowing: '养成中',
+      plaqueReady: '已成形',
       deep: '深读',
       deepRunning: '深读中',
       archive: '人格档案',
@@ -86,16 +82,15 @@ window.__ModuleLoader__.load({
       rulesEmpty: '还没有规则',
       prompt: '人格',
       test: '试音',
-      promptHint: '保存后下一句话生效。追加 = 在自动人格后加一段；完全接管 = 整段由你决定。',
       promptPlaceholder: '补充几句你希望它记住的话……',
       append: '追加',
       takeover: '完全接管',
-      save: '保存并生效',
+      save: '保存',
       unsaved: '未保存',
       copy: '复制',
       copied: '已复制',
       testPlaceholder: '写一个场景，例如：同事问你为什么不用某个方案……',
-      testRun: '用当前人格回答',
+      testRun: '回答',
       testRunning: '正在回答…',
       like: '像',
       unlike: '不像',
@@ -123,14 +118,12 @@ window.__ModuleLoader__.load({
       retry: '重试',
       settingsTitle: '设置',
       model: '深读使用的模型',
-      modelHint: '留空 = 跟随当前默认模型',
       provider: 'provider',
       modelId: 'model',
-      followDefault: '跟随默认',
-      sendToModel: '深读/试音时把文本发送给模型',
-      export: '导出 JSON',
-      reset: '清空所有数据',
-      resetArmed: '再点一次确认清空',
+      sendToModel: '深读/试音时发送文本',
+      export: '导出',
+      reset: '清空数据',
+      resetArmed: '确认清空',
       close: '关闭',
       saved: '已保存',
       deepStarted: '深读开始。',
@@ -143,13 +136,16 @@ window.__ModuleLoader__.load({
       assetAlt: '玻璃罩里的植株',
       ruleOn: '停用这条规则',
       ruleOff: '启用这条规则',
+      tipModel: '深读和试音使用的模型。留空跟随默认',
+      tipManual: '保存后下一句话生效；完全接管会替换整段人格',
+      tipTest: '结果不会写进人格，只用于对比',
+      resetWarning: '会清空语料、规则和人格；备份保留',
     };
 
     /** 英文只保留导航与最小标签，正文按中文产品走。 */
     const en = {
       nav: 'Persona nursery',
       title: 'Persona nursery',
-      subtitle: 'Specimen 001 · your voice',
     };
 
     /** 浏览器侧需要的服务。 */
@@ -206,7 +202,6 @@ window.__ModuleLoader__.load({
 .dmp-brand{display:flex;align-items:center;gap:10px;min-width:0}
 .dmp-mark{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line-strong);background:var(--paper-2);color:var(--ink-2);flex:none}
 .dmp-brand h1{font-family:var(--serif);font-size:19px;font-weight:500;letter-spacing:.01em;line-height:1;white-space:nowrap}
-.dmp-crumb{font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dmp-topright{display:flex;align-items:center;gap:6px;margin-left:auto;flex:none}
 .dmp-maturity{display:flex;align-items:baseline;gap:3px;padding-right:8px;white-space:nowrap}
 .dmp-maturity b{font-family:var(--serif);font-size:20px;font-weight:500;line-height:1}
@@ -226,7 +221,23 @@ window.__ModuleLoader__.load({
 .dmp-btn.small{height:32px;padding:0 11px;font-size:12.5px}
 .dmp-iconbtn{width:36px;height:36px;border-radius:9px;border:1px solid transparent;display:grid;place-items:center;color:var(--ink-2);position:relative}
 .dmp-iconbtn:hover{background:color-mix(in srgb,var(--ink) 5%,transparent);border-color:var(--line)}
+.dmp-iconbtn.small{width:26px;height:26px;border-radius:6px}
+.dmp-iconbtn.danger:hover{color:var(--violet-ink);background:var(--violet-soft)}
 .dmp-iconbtn .dmp-count{position:absolute;top:2px;right:2px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;background:var(--amber-soft);color:var(--amber-ink);font-size:9.5px;line-height:14px;text-align:center}
+.dmp-info{
+  position:relative;display:inline-grid;place-items:center;width:14px;height:14px;flex:none;
+  border:1px solid var(--line-strong);border-radius:50%;color:var(--ink-3);
+  font-family:Georgia,"Songti SC",serif;font-size:9px;font-style:italic;line-height:1;
+  cursor:help;vertical-align:-2px;
+}
+.dmp-info::before{content:"i"}
+.dmp-info::after{
+  content:attr(data-tip);position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);
+  width:max-content;max-width:220px;padding:6px 8px;border-radius:6px;
+  background:var(--ink);color:var(--paper);font:11.5px/1.5 var(--sans);font-style:normal;
+  opacity:0;pointer-events:none;transition:opacity .12s;z-index:25;white-space:normal;text-align:left;
+}
+.dmp-info:hover::after,.dmp-info:focus-visible::after{opacity:1}
 .dmp-progress{position:absolute;left:0;bottom:-1px;height:2px;background:var(--accent);transition:width .45s ease}
 .dmp-archbtn{display:none}
 
@@ -287,9 +298,7 @@ window.__ModuleLoader__.load({
 /* ---- 写作区 ---- */
 .dmp-composer{display:flex;flex-direction:column;min-height:0;padding:18px 26px 0;overflow:hidden}
 .dmp-write{flex:none}
-.dmp-chead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}
-.dmp-chead h2{font-size:16px;font-weight:600;letter-spacing:.01em}
-.dmp-chead p{margin-top:3px;font-size:12.5px;color:var(--ink-3)}
+.dmp-chead{display:flex;align-items:center;margin-bottom:14px}
 .dmp-seg{display:inline-flex;padding:3px;border-radius:9px;background:color-mix(in srgb,var(--ink) 6%,transparent);flex:none}
 .dmp-seg button{border-radius:6px;padding:5px 11px;font-size:12.5px;color:var(--ink-3)}
 .dmp-seg button[aria-selected="true"]{background:var(--paper-2);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1)}
@@ -305,12 +314,10 @@ window.__ModuleLoader__.load({
 .dmp-editor-foot>*{pointer-events:auto}
 .dmp-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-2);padding:2px 0}
 .dmp-link:hover{color:var(--ink)}
-.dmp-kbd{font-size:11px;color:var(--ink-3);border:1px solid var(--line);border-radius:4px;padding:1px 5px;background:var(--paper)}
 .dmp-actionbar{display:flex;align-items:center;gap:12px;margin-top:12px;flex:none}
 .dmp-submit{height:40px;padding:0 18px;border-radius:10px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);font-size:14px;display:inline-flex;align-items:center;gap:9px}
 .dmp-submit:hover:not(:disabled){background:color-mix(in srgb,var(--ink) 86%,var(--accent))}
 .dmp-submit:disabled{opacity:.4;cursor:default}
-.dmp-actionnote{font-size:12px;color:var(--ink-3)}
 .dmp-hint{margin-top:8px;font-size:12px;color:var(--ink-3);line-height:1.6}
 .dmp-hint strong{color:var(--ink-2);font-weight:500}
 .dmp-signals{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
@@ -332,7 +339,6 @@ window.__ModuleLoader__.load({
 .dmp-row:hover .dmp-del,.dmp-del:focus-visible{opacity:1}
 .dmp-del:hover{background:var(--violet-soft);color:var(--violet-ink)}
 .dmp-empty{padding:18px 0;color:var(--ink-3);font-size:13px;line-height:1.7}
-.dmp-empty strong{display:block;color:var(--ink-2);font-weight:500;font-size:13.5px;margin-bottom:2px}
 .dmp-samples{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .dmp-samples button{padding:4px 9px;border:1px dashed var(--line-strong);border-radius:7px;font-size:12px;color:var(--ink-2)}
 .dmp-samples button:hover{border-color:var(--accent-ink);color:var(--accent-ink)}
@@ -360,7 +366,6 @@ window.__ModuleLoader__.load({
 .dmp-src.local{color:var(--accent-ink);background:var(--accent-soft)}
 .dmp-src.deep{color:var(--violet-ink);background:var(--violet-soft)}
 .dmp-src.manual{color:var(--amber-ink);background:var(--amber-soft)}
-.dmp-rule-top .dmp-dim{font-size:11px;color:var(--ink-3);margin-left:2px;grid-column:auto}
 .dmp-rule-actions{margin-left:auto;display:flex;align-items:center;gap:2px}
 .dmp-switch{width:34px;height:20px;border-radius:999px;border:1px solid var(--line-strong);background:color-mix(in srgb,var(--ink) 8%,transparent);position:relative;flex:none;transition:background-color .15s,border-color .15s;margin-right:6px}
 .dmp-switch::before{content:'';position:absolute;inset:-6px;border-radius:999px}
@@ -399,8 +404,6 @@ window.__ModuleLoader__.load({
 .dmp-field label{font-size:12px;color:var(--ink-3)}
 .dmp-field input{height:36px;border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:0 10px;font-size:13px;outline:none}
 .dmp-field input:focus{border-color:var(--accent-ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
-.dmp-field-row{display:flex;align-items:center;gap:8px}
-.dmp-field-row input{flex:1}
 .dmp-check{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.5;color:var(--ink-2);margin:4px 0 14px;cursor:pointer}
 .dmp-check input{margin-top:2px;accent-color:var(--accent-ink)}
 .dmp-modal-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:16px}
@@ -456,22 +459,17 @@ window.__ModuleLoader__.load({
   .dmp-bar{grid-column:1;height:3px}
   .dmp-learned{display:none}
   .dmp-composer{padding:14px 16px 0}
-  .dmp-chead h2{font-size:15px}
-  .dmp-chead p{display:none}
   .dmp-textarea{height:132px}
   .dmp-maturity{display:none}
-  .dmp-crumb{display:none}
 }
 @media (max-width:560px){
   .dmp-topbar{padding:0 12px;gap:8px}
   .dmp-seg button{padding:5px 8px;font-size:12px}
   .dmp-actionbar{flex-wrap:wrap;row-gap:6px}
-  .dmp-kbd{display:none}
   .dmp-actionnote{display:none}
 }
 @media (max-height:640px){
   .dmp-textarea{height:112px}
-  .dmp-chead p{display:none}
 }
 @media (prefers-reduced-motion:reduce){
   .dmp-water-body,.dmp-bar i,.dmp-toast,.dmp-archive{transition:none}
@@ -550,11 +548,6 @@ window.__ModuleLoader__.load({
     /** 数字格式。 */
     function formatChars(value) {
       return Number(value ?? 0).toLocaleString('zh-CN');
-    }
-
-    /** 维度名。 */
-    function dimensionLabel(id) {
-      return DIMENSIONS.find((item) => item.id === id)?.label ?? id;
     }
 
     /** 来源名。 */
@@ -672,6 +665,36 @@ window.__ModuleLoader__.load({
       );
     }
 
+    /** 铅笔：编辑。 */
+    function PencilIcon() {
+      return h(
+        'svg',
+        { width: 13, height: 13, viewBox: '0 0 14 14', fill: 'none', 'aria-hidden': 'true' },
+        h('path', { d: 'M9.4 2.2 11.8 4.6 5.2 11.2 2.4 11.6l.4-2.8 6.6-6.6Z', stroke: 'currentColor', strokeWidth: 1.1, strokeLinejoin: 'round' }),
+      );
+    }
+
+    /** 复制。 */
+    function CopyIcon() {
+      return h(
+        'svg',
+        { width: 13, height: 13, viewBox: '0 0 14 14', fill: 'none', 'aria-hidden': 'true' },
+        h('rect', { x: 4.6, y: 4.6, width: 6.8, height: 6.8, rx: 1.4, stroke: 'currentColor', strokeWidth: 1.1 }),
+        h('path', { d: 'M9.2 4.4V3.2c0-.6-.5-1.1-1.1-1.1H3.2c-.6 0-1.1.5-1.1 1.1v4.9c0 .6.5 1.1 1.1 1.1h1.2', stroke: 'currentColor', strokeWidth: 1.1, strokeLinecap: 'round' }),
+      );
+    }
+
+    /** info 图标：文字说明放进 tooltip，键盘聚焦也能看到。 */
+    function Info(props) {
+      return h('span', {
+        className: 'dmp-info',
+        tabIndex: 0,
+        role: 'note',
+        'aria-label': props.text,
+        'data-tip': props.text,
+      });
+    }
+
     // ---- 组件 ----
 
     /** 顶栏。 */
@@ -682,7 +705,7 @@ window.__ModuleLoader__.load({
       return h(
         'header',
         { className: 'dmp-topbar' },
-        h('div', { className: 'dmp-brand' }, h('span', { className: 'dmp-mark', 'aria-hidden': 'true' }, h(VesselIcon, { size: 16 })), h('h1', null, t('title')), h('span', { className: 'dmp-crumb' }, t('subtitle'))),
+        h('div', { className: 'dmp-brand' }, h('span', { className: 'dmp-mark', 'aria-hidden': 'true' }, h(VesselIcon, { size: 16 })), h('h1', null, t('title'))),
         h(
           'div',
           { className: 'dmp-topright' },
@@ -735,7 +758,15 @@ window.__ModuleLoader__.load({
             h('i', { className: 'dmp-drop d2', 'aria-hidden': 'true' }),
             h('i', { className: 'dmp-drop d3', 'aria-hidden': 'true' }),
           ),
-          h('div', { className: 'dmp-base' }, h('div', { className: 'dmp-plaque' }, h('strong', null, 'SPECIMEN 001'), h('em', null, progress.ready ? '你的语气 · 已成形' : '你的语气 · 未成形'))),
+          h(
+            'div',
+            { className: 'dmp-base' },
+            h(
+              'div',
+              { className: 'dmp-plaque' },
+              h('strong', null, t(progress.ready ? 'plaqueReady' : 'plaqueGrowing')),
+            ),
+          ),
         ),
         h('div', { className: 'dmp-score' }, h('span', null, t('maturity')), h('b', null, String(progress.percent), h('small', null, '%'))),
         h(
@@ -827,7 +858,6 @@ window.__ModuleLoader__.load({
           h(
             'div',
             { className: 'dmp-chead' },
-            h('div', null, h('h2', null, '喂养台'), h('p', null, '粘贴你写的东西，或一段你改过的回复。本地分析，不联网。')),
             h(
               'div',
               { className: 'dmp-seg', role: 'tablist', 'aria-label': '投喂类型' },
@@ -851,12 +881,11 @@ window.__ModuleLoader__.load({
             ? h(
                 React.Fragment,
                 null,
-                h('label', { className: 'dmp-label', htmlFor: 'dmp-title' }, h('span', null, t('feedTitle')), h('em', null, t('feedTitleHint'))),
+                h('label', { className: 'dmp-label', htmlFor: 'dmp-title' }, h('span', null, t('feedTitle'))),
                 h('input', {
                   id: 'dmp-title',
                   className: 'dmp-input',
                   value: props.title,
-                  placeholder: t('feedTitle'),
                   onChange: (event) => props.onTitle(event.target.value),
                 }),
                 h(
@@ -882,7 +911,6 @@ window.__ModuleLoader__.load({
                     'div',
                     { className: 'dmp-editor-foot' },
                     h('button', { type: 'button', className: 'dmp-link', onClick: () => fileRef.current?.click() }, h(ClipIcon), t('importFile')),
-                    h('span', { className: 'dmp-kbd' }, t('shortcut')),
                   ),
                   h('input', { ref: fileRef, type: 'file', accept: '.txt,.md,.markdown,text/plain', style: { display: 'none' }, onChange: onFile }),
                 ),
@@ -895,9 +923,7 @@ window.__ModuleLoader__.load({
                     busy ? '…' : submitLabel,
                     h(ArrowIcon),
                   ),
-                  h('span', { className: 'dmp-actionnote' }, t('submitHint')),
                 ),
-                state.progress?.hints?.[0] ? h('p', { className: 'dmp-hint' }, state.progress.hints[0]) : null,
                 samples,
               )
             : null,
@@ -935,7 +961,6 @@ window.__ModuleLoader__.load({
                     busy ? '…' : submitLabel,
                     h(DropIcon),
                   ),
-                  h('span', { className: 'dmp-actionnote' }, '高营养：diff 比长文更有信号'),
                 ),
                 latestCorrection !== undefined && (latestCorrection.signals ?? []).length > 0
                   ? h(
@@ -972,7 +997,6 @@ window.__ModuleLoader__.load({
                   'div',
                   { className: 'dmp-actionbar' },
                   h('button', { type: 'button', className: 'dmp-submit', disabled: busy || !canSubmit, onClick: () => props.onFeed('note') }, busy ? '…' : submitLabel, h(ArrowIcon)),
-                  h('span', { className: 'dmp-actionnote' }, '不想等分析时，直接把规则写死'),
                 ),
               )
             : null,
@@ -993,10 +1017,10 @@ window.__ModuleLoader__.load({
           'div',
           { className: 'dmp-lhead' },
           h('h3', null, t('recent')),
-          h('span', null, `${state.entries.length} 条 · ${formatChars(state.progress?.chars ?? 0)} ${t('chars')}`),
+          h('span', null, `${state.entries.length} 条`),
         ),
         state.entries.length === 0
-          ? h('div', { className: 'dmp-empty' }, h('strong', null, t('emptyTitle')), t('emptyNote'))
+          ? h('div', { className: 'dmp-empty' }, t('emptyRecent'))
           : h(
               'ul',
               { className: 'dmp-list' },
@@ -1032,7 +1056,6 @@ window.__ModuleLoader__.load({
           'div',
           { className: 'dmp-rule-top' },
           h('span', { className: `dmp-src ${rule.layer}` }, layerLabel(rule.layer, t)),
-          h('span', { className: 'dmp-dim' }, dimensionLabel(rule.dimension)),
           h(
             'div',
             { className: 'dmp-rule-actions' },
@@ -1044,8 +1067,10 @@ window.__ModuleLoader__.load({
               'aria-label': enabled ? t('ruleOn') : t('ruleOff'),
               onClick: () => props.onToggle(rule, !enabled),
             }),
-            h('button', { type: 'button', className: 'dmp-mini', onClick: () => props.onEdit(rule) }, t('edit')),
-            h('button', { type: 'button', className: `dmp-mini danger${armed ? ' armed' : ''}`, onClick: () => props.onDelete(rule) }, armed ? t('confirmAgain') : t('delete')),
+            h('button', { type: 'button', className: 'dmp-iconbtn small', onClick: () => props.onEdit(rule), title: t('edit'), 'aria-label': t('edit') }, h(PencilIcon)),
+            armed
+              ? h('button', { type: 'button', className: 'dmp-mini armed', onClick: () => props.onDelete(rule) }, t('confirmAgain'))
+              : h('button', { type: 'button', className: 'dmp-iconbtn small danger', onClick: () => props.onDelete(rule), title: t('delete'), 'aria-label': t('delete') }, h(TrashIcon)),
           ),
         ),
         editing
@@ -1139,7 +1164,7 @@ window.__ModuleLoader__.load({
               'div',
               { className: 'dmp-panel' },
               job?.status === 'running'
-                ? h('div', { className: 'dmp-pending' }, h('div', { className: 'dmp-pending-head' }, h('strong', null, t('deepRunning')), h('span', null, job.phase ?? '')), h('p', null, '模型正在读语料；完成后会出现在这里，等你收下。'))
+                ? h('div', { className: 'dmp-pending' }, h('div', { className: 'dmp-pending-head' }, h('strong', null, t('deepRunning')), h('span', null, job.phase ?? '')))
                 : null,
               job?.status === 'error'
                 ? h('div', { className: 'dmp-pending' }, h('div', { className: 'dmp-pending-head' }, h('strong', null, t('deepFailed')), h('span', null, '')), h('p', null, job.error ?? '未知错误'))
@@ -1154,7 +1179,7 @@ window.__ModuleLoader__.load({
                   )
                 : null,
               state.rules.length === 0
-                ? h('div', { className: 'dmp-empty' }, h('strong', null, t('rulesEmpty')), '先喂一段语料，规则会带着原文证据出现在这里。')
+                ? h('div', { className: 'dmp-empty' }, t('rulesEmpty'))
                 : groups.map((group) =>
                     h(
                       'section',
@@ -1189,14 +1214,14 @@ window.__ModuleLoader__.load({
                 'div',
                 { className: 'dmp-lhead', style: { marginBottom: 6 } },
                 h('h3', null, '当前人格'),
-                h('button', { type: 'button', className: 'dmp-link', onClick: props.onCopy }, t('copy')),
+                h('button', { type: 'button', className: 'dmp-iconbtn small', onClick: props.onCopy, title: t('copy'), 'aria-label': t('copy') }, h(CopyIcon)),
               ),
               h('pre', { className: 'dmp-pre' }, state.profile),
               h(
                 'div',
                 { className: 'dmp-label', style: { marginTop: 14 } },
-                h('span', null, '手动补充'),
-                props.manualDirty ? h('em', { className: 'dmp-dirty' }, h('i', null), t('unsaved')) : h('em', null, '⌘S'),
+                h('span', null, '手动补充 ', h(Info, { text: t('tipManual') })),
+                props.manualDirty ? h('em', { className: 'dmp-dirty' }, h('i', null), t('unsaved')) : null,
               ),
               h('textarea', {
                 className: 'dmp-textarea',
@@ -1214,7 +1239,6 @@ window.__ModuleLoader__.load({
                 ),
               ),
               h('div', { className: 'dmp-actionbar' }, h('button', { type: 'button', className: 'dmp-btn primary small', onClick: props.onSaveManual }, t('save'))),
-              h('p', { className: 'dmp-hint' }, t('promptHint')),
             )
           : null,
 
@@ -1222,7 +1246,7 @@ window.__ModuleLoader__.load({
           ? h(
               'div',
               { className: 'dmp-panel' },
-              h('div', { className: 'dmp-label' }, h('span', null, '场景'), h('em', null, '不会自动写进人格')),
+              h('div', { className: 'dmp-label' }, h('span', null, '场景 ', h(Info, { text: t('tipTest') }))),
               h('textarea', {
                 className: 'dmp-textarea',
                 style: { height: 92, paddingBottom: 12 },
@@ -1234,7 +1258,7 @@ window.__ModuleLoader__.load({
               h(
                 'div',
                 { className: 'dmp-actionbar' },
-                h('button', { type: 'button', className: 'dmp-btn small', disabled: props.testRunning || props.scenario.trim().length < 2, onClick: props.onTest }, props.testRunning ? t('testRunning') : t('testRun')),
+                h('button', { type: 'button', className: 'dmp-btn small', disabled: props.testRunning || props.scenario.trim().length < 2, onClick: props.onTest, 'aria-label': '用当前人格回答' }, props.testRunning ? t('testRunning') : t('testRun')),
               ),
               props.testError ? h('p', { className: 'dmp-hint', style: { color: 'var(--violet-ink)' } }, props.testError) : null,
               props.testOutput.length > 0
@@ -1311,26 +1335,15 @@ window.__ModuleLoader__.load({
           h(
             'div',
             { className: 'dmp-field' },
-            h('label', { htmlFor: 'dmp-provider' }, `${t('model')} · ${t('provider')}`),
-            h(
-              'div',
-              { className: 'dmp-field-row' },
-              h('input', { id: 'dmp-provider', value: props.provider, placeholder: state.settings.defaultProvider ?? 'follow default', onChange: (event) => props.onProvider(event.target.value) }),
-              h('button', { type: 'button', className: 'dmp-btn small ghost', onClick: () => props.onProvider('') }, t('followDefault')),
-            ),
+            h('label', { htmlFor: 'dmp-provider' }, 'Provider'),
+            h('input', { id: 'dmp-provider', value: props.provider, placeholder: state.settings.defaultProvider ?? '', onChange: (event) => props.onProvider(event.target.value) }),
           ),
           h(
             'div',
             { className: 'dmp-field' },
-            h('label', { htmlFor: 'dmp-model' }, `${t('model')} · ${t('modelId')}`),
-            h(
-              'div',
-              { className: 'dmp-field-row' },
-              h('input', { id: 'dmp-model', value: props.model, placeholder: state.settings.defaultModel ?? 'follow default', onChange: (event) => props.onModel(event.target.value) }),
-              h('button', { type: 'button', className: 'dmp-btn small ghost', onClick: () => props.onModel('') }, t('followDefault')),
-            ),
+            h('label', { htmlFor: 'dmp-model' }, 'Model ', h(Info, { text: `${t('tipModel')}（${state.settings.defaultProvider ?? '—'} / ${state.settings.defaultModel ?? '—'}）` })),
+            h('input', { id: 'dmp-model', value: props.model, placeholder: state.settings.defaultModel ?? '', onChange: (event) => props.onModel(event.target.value) }),
           ),
-          h('p', { className: 'dmp-hint', style: { marginTop: -6, marginBottom: 12 } }, `${t('modelHint')}（${state.settings.defaultProvider ?? '—'} / ${state.settings.defaultModel ?? '—'}）`),
           h(
             'label',
             { className: 'dmp-check' },
@@ -1360,6 +1373,7 @@ window.__ModuleLoader__.load({
             h('span', { className: 'dmp-spacer' }),
             h('button', { type: 'button', className: 'dmp-btn small primary', onClick: props.onSave }, t('save')),
           ),
+          armed ? h('p', { className: 'dmp-hint', style: { color: 'var(--violet-ink)', marginTop: 10 } }, t('resetWarning')) : null,
         ),
       );
     }
