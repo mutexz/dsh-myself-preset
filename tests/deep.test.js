@@ -57,3 +57,38 @@ test('parseRun strips a fenced code block and normalizes rules', () => {
 test('parseRun rejects output that is not JSON', () => {
   assert.throws(() => parseRun('这不是 JSON', 'p', 'm'), /JSON/);
 });
+
+test('streamTextChunks stops after the signal aborts', async () => {
+  const controller = new AbortController();
+  const ctx = {
+    get() {
+      return {
+        stream: async function* stream() {
+          yield { type: 'text-delta', index: 0, text: '一' };
+          controller.abort();
+          yield { type: 'text-delta', index: 0, text: '二' };
+        },
+      };
+    },
+  };
+  const text = await streamTextChunks(ctx, { signal: controller.signal });
+  assert.equal(text, '一');
+});
+
+test('streamTextChunks keeps the abort signal out of the host options', async () => {
+  let seen = null;
+  const ctx = {
+    get() {
+      return {
+        stream: async function* stream(options) {
+          seen = options;
+          yield { type: 'finish', reason: { kind: 'stop' } };
+        },
+      };
+    },
+  };
+  await streamTextChunks(ctx, { provider: 'p', model: 'm', maxTokens: 10, signal: new AbortController().signal });
+  assert.equal('signal' in seen, false);
+  assert.equal(seen.provider, 'p');
+  assert.equal(seen.maxTokens, 10);
+});

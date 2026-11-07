@@ -183,7 +183,6 @@ dsh-myself-preset/
 | GET | `state.json` | 条目、规则、进度、深读状态、设置 |
 | POST | `entries` | 新增语料/纠正/手改规则 |
 | POST | `entries/delete` | 删除条目并重算 |
-| POST | `feed` | 新增 + 本地分析 + 编译 + 返回增量 |
 | POST | `deep` | 启动深读任务 |
 | GET | `deep/status` | 阶段、进度、结果 |
 | POST | `rules/update` | 启用/停用/编辑/收下/拒绝 |
@@ -204,9 +203,8 @@ dsh-myself-preset/
 - `state.json`：条目、规则、手改、深读记录、设置。
 - `profile.md`：编译后的最终人格，preset 变量只读这个文件。
 - `backups/profile-<时间戳>.md`：每次编译前留一份，最多 20 份。
-- `exports/myself-<时间戳>.json`：导出。
 
-写入用临时文件 + rename；进程内串行化，避免并发写坏。
+目录 0700、文件 0600；写入用临时文件 + rename。进程内缓存按 `inode + mtime + size` 失效（外部改写也能识别），写操作串行化并作用在副本上，回调抛错时不会留下半改状态。
 
 ### preset 热更新（关键）
 

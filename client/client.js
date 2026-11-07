@@ -406,7 +406,8 @@ window.__ModuleLoader__.load({
       const tagId = `${PLUGIN_ID}/page.css`;
       const existing = document.querySelector(`style[data-plugin-css="${tagId}"]`);
       if (existing !== null) {
-        existing.textContent = css;
+        // 每次 apply 都重写 textContent 会让整页样式重解析，没变就不动。
+        if (existing.textContent !== css) existing.textContent = css;
         return;
       }
       const tag = document.createElement('style');
@@ -418,24 +419,36 @@ window.__ModuleLoader__.load({
 
     // ---- 小工具 ----
 
-    /** 请求宿主。 */
-    async function request(path, body, method = 'POST') {
+    /** 请求宿主；带超时，避免一次挂起就把 busy 卡死。 */
+    async function request(path, body, method = 'POST', timeoutMs = 20000) {
       const init = {
         method,
         headers: body === undefined ? undefined : { 'content-type': 'application/json' },
         body: body === undefined ? undefined : JSON.stringify(body),
       };
-      const response = await fetch(`${API}${path}`, init);
-      let data = null;
+      const controller = typeof AbortController === 'function' ? new AbortController() : null;
+      const timer = controller === null ? null : setTimeout(() => controller.abort(), timeoutMs);
+      if (controller !== null) init.signal = controller.signal;
       try {
-        data = await response.json();
-      } catch {
-        data = null;
+        const response = await fetch(`${API}${path}`, init);
+        let data = null;
+        try {
+          data = await response.json();
+        } catch {
+          data = null;
+        }
+        if (!response.ok) {
+          throw new Error(data?.error ?? `HTTP ${response.status}`);
+        }
+        return data;
+      } catch (error) {
+        if (error !== null && typeof error === 'object' && error.name === 'AbortError') {
+          throw new Error('请求超时：宿主没有响应。');
+        }
+        throw error;
+      } finally {
+        if (timer !== null) clearTimeout(timer);
       }
-      if (!response.ok) {
-        throw new Error(data?.error ?? `HTTP ${response.status}`);
-      }
-      return data;
     }
 
     /** 截断。 */
@@ -598,8 +611,18 @@ window.__ModuleLoader__.load({
         const file = event.target.files?.[0];
         event.target.value = '';
         if (file === undefined) return;
+        // 服务端请求体上限 2MB；先在这里拦，别让浏览器先序列化一个大文件。
+        if (file.size > 1_000_000) {
+          props.onError('文件太大（上限 1MB），请拆成几段分别导入。');
+          return;
+        }
         try {
           const text = await file.text();
+          // 服务端单条上限 2 万字；先看着字数再交给页面，错误提示更直白。
+          if (text.length > 20000) {
+            props.onError('单条最多 2 万字，请拆成几段分别导入。');
+            return;
+          }
           props.onFileText(text, file.name.replace(/\.[^.]+$/u, ''));
         } catch (error) {
           props.onError(`读文件失败：${error instanceof Error ? error.message : String(error)}`);
@@ -1228,6 +1251,10 @@ window.__ModuleLoader__.load({
       const manualDirty = React.useRef(false);
       const settingsDirty = React.useRef(false);
       const deepPoll = React.useRef(null);
+      const deepPollBusy = React.useRef(false);
+      const testAbort = React.useRef(null);
+      const testBuffer = React.useRef('');
+      const testFlush = React.useRef(null);
 
       const showToast = React.useCallback((message) => {
         if (toastTimer.current !== null) clearTimeout(toastTimer.current);
@@ -1266,6 +1293,14 @@ window.__ModuleLoader__.load({
         return () => {
           if (toastTimer.current !== null) clearTimeout(toastTimer.current);
           if (deepPoll.current !== null) clearInterval(deepPoll.current);
+          if (testFlush.current !== null) {
+            clearInterval(testFlush.current);
+            testFlush.current = null;
+          }
+          if (testAbort.current !== null) {
+            testAbort.current.abort();
+            testAbort.current = null;
+          }
         };
       }, [load]);
 
@@ -1280,9 +1315,11 @@ window.__ModuleLoader__.load({
         }
         if (deepPoll.current !== null) return undefined;
         deepPoll.current = setInterval(async () => {
+          // 上一次还没回来就跳过这一拍，避免请求堆积。
+          if (deepPollBusy.current) return;
+          deepPollBusy.current = true;
           try {
             const data = await request('/deep/status', undefined, 'GET');
-            setState((prev) => (prev === null ? prev : { ...prev, deep: { ...prev.deep, job: data.job, pending: data.pending ?? prev.deep.pending } }));
             if (data.job?.status === 'done') {
               clearInterval(deepPoll.current);
               deepPoll.current = null;
@@ -1295,11 +1332,15 @@ window.__ModuleLoader__.load({
               clearInterval(deepPoll.current);
               deepPoll.current = null;
               showToast(`${t('deepFailed')}：${data.job.error ?? '未知错误'}`);
+            } else {
+              setState((prev) => (prev === null ? prev : { ...prev, deep: { ...prev.deep, job: data.job, pending: data.pending ?? prev.deep.pending } }));
             }
           } catch (caught) {
             clearInterval(deepPoll.current);
             deepPoll.current = null;
             showToast(caught instanceof Error ? caught.message : String(caught));
+          } finally {
+            deepPollBusy.current = false;
           }
         }, 950);
         return () => {
@@ -1439,16 +1480,37 @@ window.__ModuleLoader__.load({
         }
       };
 
+      /** 把缓冲的增量一次性写进 state，避免每个 token 触发整页重渲染。 */
+      const flushTestOutput = () => {
+        const chunk = testBuffer.current;
+        if (chunk.length === 0) return;
+        testBuffer.current = '';
+        setTestOutput((previous) => previous + chunk);
+      };
+
       const runTest = async () => {
         if (testRunning || scenario.trim().length < 2) return;
+        if (testFlush.current !== null) {
+          clearInterval(testFlush.current);
+          testFlush.current = null;
+        }
+        if (testAbort.current !== null) {
+          testAbort.current.abort();
+          testAbort.current = null;
+        }
+        const controller = typeof AbortController === 'function' ? new AbortController() : null;
+        testAbort.current = controller;
+        testBuffer.current = '';
         setTestRunning(true);
         setTestError('');
         setTestOutput('');
+        testFlush.current = setInterval(flushTestOutput, 80);
         try {
           const response = await fetch(`${API}/test`, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ scenario }),
+            signal: controller === null ? undefined : controller.signal,
           });
           if (!response.ok) {
             const data = await response.json().catch(() => null);
@@ -1474,15 +1536,24 @@ window.__ModuleLoader__.load({
                 continue;
               }
               if (message.type === 'delta' && typeof message.text === 'string') {
-                setTestOutput((previous) => previous + message.text);
+                testBuffer.current += message.text;
               } else if (message.type === 'error') {
                 throw new Error(message.error ?? '模型请求失败。');
               }
             }
           }
         } catch (caught) {
-          setTestError(caught instanceof Error ? caught.message : String(caught));
+          // 主动取消（切换/卸载）不算错误。
+          if (!(caught !== null && typeof caught === 'object' && caught.name === 'AbortError')) {
+            setTestError(caught instanceof Error ? caught.message : String(caught));
+          }
         } finally {
+          if (testFlush.current !== null) {
+            clearInterval(testFlush.current);
+            testFlush.current = null;
+          }
+          flushTestOutput();
+          if (testAbort.current === controller) testAbort.current = null;
           setTestRunning(false);
         }
       };
@@ -1515,7 +1586,7 @@ window.__ModuleLoader__.load({
       const resetAll = async () => {
         if (!window.confirm(t('resetConfirm'))) return;
         try {
-          const payload = await request('/reset', {});
+          const payload = await request('/reset', { confirm: 'reset' });
           applyState(payload.state);
           setSettingsOpen(false);
           showToast(t('deleted'));

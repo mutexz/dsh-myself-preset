@@ -41,8 +41,7 @@ test('progress is bounded and grows with content', () => {
   assert.ok(large.overall > 0.3);
 });
 
-test('mergeRules preserves manual rules and applies local prefs', () => {
-  const state = defaultState();
+test('mergeRules preserves manual rules and applies local prefs', () => {  const state = defaultState();
   state.rules = [{
     id: 'manual-1', key: 'manual:1', layer: 'manual', dimension: 'voice', text: '先给结论', confidence: 1, evidence: [], enabled: true,
   }];
@@ -53,4 +52,31 @@ test('mergeRules preserves manual rules and applies local prefs', () => {
   const localRule = merged.find((rule) => rule.key === 'rhythm:sentence-short');
   assert.equal(localRule.enabled, false);
   assert.equal(localRule.text, '自定义句长规则');
+});
+
+test('analysis stays bounded on pathological corpora', () => {
+  // 50 万字 × 3 条：旧实现的 Math.max(...lengths) 会在这里爆栈，
+  // n-gram 也会把内存吃光。现在只统计最近的一部分，指标口径仍然是全部。
+  const text = '一。'.repeat(250000);
+  const entries = Array.from({ length: 3 }, (_, index) => ({
+    id: `p${index}`,
+    type: 'corpus',
+    title: 'p',
+    text,
+    chars: text.length,
+    createdAt: index,
+  }));
+  const { metrics } = analyzeEntries(entries);
+  assert.equal(metrics.documents, 3);
+  assert.equal(metrics.chars, text.length * 3, '字数按全部条目统计，不受采样影响');
+  assert.ok(metrics.sentences > 0);
+  assert.ok(Number.isFinite(metrics.avgSentence));
+});
+
+test('computeProgress reuses the metrics computed by analyzeEntries', () => {
+  const { metrics } = analyzeEntries(entries);
+  const progress = computeProgress({ entries, deep: { runs: [] } });
+  assert.equal(progress.chars, metrics.chars);
+  assert.equal(progress.sentences, metrics.sentences);
+  assert.equal(progress.documents, metrics.documents);
 });
