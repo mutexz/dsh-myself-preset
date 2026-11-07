@@ -1,6 +1,6 @@
 {
   "name": "dsh-myself-preset",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "语感花房：投喂自己的语料和纠正，生成本地可解释的风格规则，可选模型深读，编译成可切换的 DSH preset，下一句话生效。",
   "type": "module",
   "main": "lib/index.js",
