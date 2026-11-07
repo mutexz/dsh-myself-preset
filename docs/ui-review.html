@@ -1,0 +1,1141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>语感花房 · UI 对照评审</title>
+<style>
+/* ============================================================
+   1. 评审外壳
+   ============================================================ */
+:root{
+  --d-ink:#1a1917;
+  --d-ink2:#5b554b;
+  --d-ink3:#7c756a;
+  --d-line:rgba(26,25,23,.12);
+  --d-line2:rgba(26,25,23,.2);
+  --d-bg:#e9e3d7;
+  --d-panel:#fbf8f1;
+  --d-accent:#13695d;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  --serif:"Songti SC","Noto Serif SC",Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:
+    radial-gradient(circle at 12% 0%,rgba(232,163,61,.10),transparent 42%),
+    radial-gradient(circle at 92% 12%,rgba(47,184,166,.08),transparent 46%),
+    var(--d-bg);
+  color:var(--d-ink);font:14px/1.7 var(--sans);
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:56px;
+}
+button{font:inherit;color:inherit}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.topbar{
+  position:sticky;top:0;z-index:40;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  padding:12px 26px;border-bottom:1px solid var(--d-line);
+  background:color-mix(in srgb,var(--d-panel) 88%,transparent);
+  backdrop-filter:blur(10px);
+}
+.tb-brand{display:flex;align-items:baseline;gap:10px;margin-right:auto;min-width:0}
+.tb-brand b{font-family:var(--serif);font-size:17px;font-weight:500;letter-spacing:.01em}
+.tb-brand span{font-size:12px;color:var(--d-ink3);white-space:nowrap}
+.seg{display:inline-flex;padding:3px;border-radius:10px;background:rgba(26,25,23,.06);gap:2px}
+.seg button{border:0;background:none;font-size:12.5px;padding:6px 12px;border-radius:7px;cursor:pointer;color:var(--d-ink2)}
+.seg button.on{background:var(--d-panel);color:var(--d-ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.seg button:focus-visible,.tgl input:focus-visible+span{outline:2px solid var(--d-accent);outline-offset:2px}
+.tgl{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--d-ink2);cursor:pointer;user-select:none}
+.tgl input{accent-color:var(--d-accent);margin:0}
+
+.lead{max-width:1220px;margin:0 auto;padding:30px 26px 14px}
+.lead h1{margin:0 0 8px;font-family:var(--serif);font-size:27px;font-weight:500;letter-spacing:-.01em}
+.lead p{margin:0;max-width:760px;color:var(--d-ink2);font-size:14px}
+.stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.stats span{
+  display:inline-flex;align-items:baseline;gap:7px;
+  padding:7px 12px;border:1px solid var(--d-line);border-radius:999px;
+  background:rgba(251,248,241,.7);font-size:12px;color:var(--d-ink2);
+}
+.stats b{font-family:var(--serif);font-size:15px;font-weight:500;color:var(--d-ink)}
+.stats .warn b{color:#8a3d12}
+
+/* 画板 */
+.board{display:flex;gap:18px;padding:10px 22px 26px;max-width:1600px;margin:0 auto;align-items:flex-start}
+.board.single{max-width:1240px;justify-content:center}
+.board.stack{flex-direction:column;max-width:1220px;gap:22px}
+.board.stack .pane{flex:0 0 auto;width:100%}
+.pane{
+  flex:1 1 0;min-width:0;display:flex;flex-direction:column;
+  background:var(--d-panel);border:1px solid var(--d-line);border-radius:14px;
+  box-shadow:0 14px 34px rgba(50,40,25,.08);overflow:hidden;
+}
+.board.single .pane{flex:0 1 auto;width:100%}
+.pane-head{display:flex;align-items:baseline;gap:10px;padding:11px 14px;border-bottom:1px solid var(--d-line);background:rgba(26,25,23,.02)}
+.pane-head b{font-size:13px;letter-spacing:.02em}
+.pane-head span{font-size:11.5px;color:var(--d-ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.legend{display:none;gap:16px;padding:7px 14px;border-bottom:1px solid var(--d-line);background:rgba(251,248,241,.6);font-size:11.5px;color:var(--d-ink2)}
+body.show-zones .legend{display:flex;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:8px;height:8px;border-radius:2px;display:block}
+.pane-head .tag{margin-left:auto;font-size:10.5px;padding:2px 7px;border-radius:5px;white-space:nowrap;border:1px solid var(--d-line2);color:var(--d-ink2)}
+
+.viewport{position:relative;width:100%;overflow:hidden;background:#efe9dd}
+.frame{
+  width:1200px;height:800px;transform:scale(var(--s,.55));transform-origin:top left;
+  position:relative;overflow:hidden;
+}
+.overlay{position:absolute;inset:0;pointer-events:none;z-index:30}
+.pin{
+  position:absolute;transform:translate(-50%,-50%);
+  width:26px;height:26px;border-radius:50%;border:0;padding:0;
+  background:#1b1b1c;color:#f7f3ea;font-size:12px;font-weight:600;line-height:26px;text-align:center;
+  cursor:pointer;pointer-events:auto;
+  box-shadow:0 0 0 3px rgba(247,243,234,.9),0 4px 10px rgba(0,0,0,.25);
+  transition:transform .15s,background-color .15s;
+}
+.pin:hover,.pin.hot{transform:translate(-50%,-50%) scale(1.14);background:#8a3d12}
+.pin:focus-visible{outline:2px solid #f7f3ea;outline-offset:3px}
+body.no-pins .pin{display:none}
+
+.zone{position:absolute;border:1px dashed var(--zone-ink,#13695d);opacity:0;transition:opacity .2s;--zone-ink:#13695d}
+.zone em{
+  position:absolute;left:-1px;top:-1px;
+  font-size:10.5px;font-style:normal;line-height:1.6;padding:1px 6px;
+  border:1px solid var(--zone-ink);border-radius:4px 4px 0 0;
+  background:#fbf8f1;color:var(--zone-ink);white-space:nowrap;
+}
+body.show-zones .zone{opacity:1}
+.zone.deco{--zone-ink:#5b4bc4}
+.zone.act{--zone-ink:#13695d}
+.zone.out{--zone-ink:#8a3d12}
+
+/* ============================================================
+   2. 现状：复刻 client/client.js 的版式与字号
+   ============================================================ */
+.c-root{
+  --paper:#f3efe6;--paper2:#fbf8f1;--ink:#1b1b1c;--ink2:#5f5a52;--ink3:#8d877c;
+  --line:rgba(27,27,28,.13);--line2:rgba(27,27,28,.22);
+  --teal:#2fb8a6;--teal-soft:rgba(47,184,166,.14);
+  --amber:#e8a33d;--amber-soft:rgba(232,163,61,.16);
+  --violet:#8b7cf6;
+  --serif:"Songti SC","Noto Serif SC",Georgia,serif;
+  position:relative;width:100%;height:100%;overflow:hidden;color:var(--ink);
+  font-family:var(--sans);
+  background:
+    radial-gradient(circle at 74% 38%,rgba(232,163,61,.10),transparent 38%),
+    radial-gradient(circle at 60% 80%,rgba(47,184,166,.06),transparent 44%),
+    var(--paper);
+}
+.c-app{position:relative;z-index:1;display:grid;grid-template-columns:400px minmax(0,1fr);grid-template-rows:64px minmax(0,1fr) 48px;height:100%;overflow:hidden}
+
+.c-top{grid-column:1/3;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 24px;border-bottom:1px solid var(--line);background:var(--paper);min-width:0}
+.c-brand{display:flex;align-items:center;gap:12px;min-width:0}
+.c-mark{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line2);background:var(--paper2);box-shadow:inset 0 0 0 4px var(--paper);flex:none;color:var(--ink2)}
+.c-brand h1{margin:0;font-family:var(--serif);font-size:21px;font-weight:500;line-height:1.2}
+.c-brand p{margin:3px 0 0;font-family:var(--serif);font-size:11px;color:var(--ink3);letter-spacing:.04em;white-space:nowrap}
+.c-topright{display:flex;align-items:center;gap:10px;flex:none}
+.c-status{font-size:11.5px;color:var(--ink3);padding-right:6px;white-space:nowrap}
+.c-status b{color:var(--ink2);font-weight:500}
+.c-btn{height:32px;padding:0 13px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--ink2);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:inherit}
+.c-btn.primary{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+.c-btn.icon{width:32px;padding:0}
+.c-btn.small{height:31px;padding:0 14px}
+
+.c-feed{grid-column:1;grid-row:2;min-height:0;padding:22px 24px 18px;border-right:1px solid var(--line);display:flex;flex-direction:column;overflow-y:auto;background:var(--paper);scrollbar-width:thin;scrollbar-color:rgba(27,27,28,.18) transparent}
+.c-tabs{display:flex;gap:22px;border-bottom:1px solid var(--line);margin-bottom:18px;flex:none}
+.c-tab{position:relative;padding:0 0 10px;border:0;background:transparent;color:var(--ink3);font-size:12.5px;cursor:pointer;font-family:inherit}
+.c-tab.active{color:var(--ink);font-weight:500}
+.c-tab.active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1.5px;background:var(--ink)}
+.c-label{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 7px;font-size:11.5px;color:var(--ink3);flex:none}
+.c-label span{font-size:11px}
+.c-input{width:100%;height:36px;padding:0 11px;border:1px solid var(--line);border-radius:9px;background:var(--paper2);color:var(--ink);font:12.5px/1.4 var(--sans);outline:none;margin-bottom:16px}
+.c-editor{position:relative;flex:none}
+.c-textarea{width:100%;height:168px;padding:13px 14px 34px;border:1px solid var(--line);border-radius:11px;background:var(--paper2);color:var(--ink);font:12.8px/1.85 var(--sans);outline:none;resize:none;box-shadow:0 1px 0 rgba(255,255,255,.55) inset}
+.c-eactions{position:absolute;left:12px;bottom:9px;display:flex;gap:12px}
+.c-link{border:0;background:none;padding:0;color:var(--ink2);font-size:11px;cursor:pointer;font-family:inherit}
+.c-char{position:absolute;right:12px;bottom:10px;font-size:10.5px;color:var(--ink3);font-variant-numeric:tabular-nums;pointer-events:none}
+.c-pour{width:100%;height:42px;margin-top:14px;border-radius:11px;font-size:13px;justify-content:space-between;padding:0 15px 0 13px;flex:none}
+.c-pour .left{display:inline-flex;align-items:center;gap:8px}
+.c-pour .delta{font-size:11.5px;opacity:.68;font-variant-numeric:tabular-nums}
+.c-hint{margin:8px 0 0;font-size:11px;color:var(--ink3);line-height:1.5;flex:none}
+.c-recent{margin-top:22px}
+.c-rhead{display:flex;align-items:baseline;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.c-rhead h2{margin:0;font-size:11.5px;font-weight:500;color:var(--ink2)}
+.c-rhead span{font-size:10.5px;color:var(--ink3)}
+.c-item{display:grid;grid-template-columns:42px minmax(0,1fr) 18px;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.c-badge{justify-self:start;padding:2px 6px;border-radius:5px;font-size:10px;line-height:1.3;white-space:nowrap}
+.c-badge.corpus{color:var(--teal);background:var(--teal-soft)}
+.c-badge.correction{color:var(--amber);background:var(--amber-soft)}
+.c-badge.note{color:var(--violet);background:color-mix(in srgb,var(--violet) 12%,transparent)}
+.c-item strong{display:block;font-size:11.5px;font-weight:500;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-item em{display:block;margin-top:2px;font-style:normal;font-size:10.5px;color:var(--ink3)}
+.c-x{border:0;background:none;color:var(--ink3);cursor:pointer;font-size:14px;line-height:1;padding:0;opacity:0}
+.c-item:hover .c-x{opacity:1}
+.c-privacy{margin-top:auto;padding-top:12px;font-size:10px;line-height:1.5;color:var(--ink3);border-top:1px solid var(--line);flex:none}
+
+.c-stage{grid-column:2;grid-row:2;position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;padding:20px 34px 18px;overflow:hidden;background:radial-gradient(circle at 58% 36%,color-mix(in srgb,var(--amber) 10%,transparent),transparent 40%),radial-gradient(circle at 78% 82%,color-mix(in srgb,var(--teal) 6%,transparent),transparent 46%),var(--paper)}
+.c-stage-top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex:none}
+.c-kicker{font-size:11px;color:var(--ink3);letter-spacing:.02em}
+.c-percent{font-family:var(--serif);font-size:32px;font-weight:400;line-height:1;margin-left:8px}
+.c-percent small{font-size:14px;color:var(--ink3);margin-left:2px}
+.c-stagenote{font-size:11px;color:var(--ink3);padding-bottom:2px;text-align:right}
+.c-main{position:relative;flex:1 1 auto;min-height:0;display:grid;place-items:center}
+.c-halo{position:absolute;left:50%;top:50%;width:520px;height:520px;transform:translate(-50%,-50%);opacity:.72;pointer-events:none}
+.c-halo .orbit{fill:none;stroke:var(--line);stroke-width:1}
+.c-halo .ticks{fill:none;stroke:var(--ink3);stroke-width:1;stroke-dasharray:1 9;opacity:.45}
+.c-halo .arc{fill:none;stroke:var(--teal);stroke-width:2.4;stroke-linecap:round}
+.c-halo .glow{fill:none;stroke:var(--teal);stroke-width:7;stroke-linecap:round;opacity:.12}
+.c-vessel{position:relative;z-index:2;width:390px;height:560px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;transform:scale(.86);transform-origin:center bottom}
+.c-jar{position:relative;width:310px;height:456px;border-radius:155px 155px 18px 18px;overflow:hidden;border:1px solid rgba(27,27,28,.22);box-shadow:inset 0 0 0 1px rgba(255,255,255,.72),inset 14px 0 24px rgba(255,255,255,.22),inset -14px 0 24px rgba(255,255,255,.08),0 18px 40px rgba(60,50,30,.12);background:linear-gradient(180deg,rgba(255,255,255,.30),rgba(238,246,244,.10) 26%,rgba(238,246,244,.12) 70%,rgba(255,255,255,.22));isolation:isolate}
+.c-jar::before{content:"";position:absolute;left:12px;top:30px;bottom:24px;width:22px;border-radius:50%;background:linear-gradient(90deg,rgba(255,255,255,.32),rgba(255,255,255,0));filter:blur(2px);z-index:5}
+.c-jar::after{content:"";position:absolute;left:12%;right:12%;top:0;height:40px;border-radius:0 0 50% 50%;border-bottom:1px solid rgba(255,255,255,.5);z-index:5}
+.c-plant{position:absolute;left:50%;bottom:10px;width:280px;transform:translateX(-50%) scale(.9);transform-origin:50% 100%;z-index:2;filter:saturate(.94) contrast(1.02) drop-shadow(0 14px 20px rgba(30,25,15,.18))}
+.c-water{position:absolute;inset:0;overflow:hidden;z-index:3;pointer-events:none}
+.c-water-body{position:absolute;inset:0;transform:translateY(calc(100% - var(--lvl,13.4%)));background:linear-gradient(180deg,rgba(47,184,166,.15),rgba(47,184,166,.04))}
+.c-water-body::before{content:"";position:absolute;left:-6%;right:-6%;top:-1px;height:1px;background:linear-gradient(90deg,transparent,var(--teal) 12%,var(--teal) 88%,transparent);opacity:.38}
+.c-drop{position:absolute;z-index:5;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 1px 2px rgba(30,25,15,.12),inset 0 1px 1px rgba(255,255,255,.8)}
+.c-drop.d1{left:66px;top:190px;width:5px;height:5px}
+.c-drop.d2{left:232px;top:246px;width:3.5px;height:3.5px;opacity:.75}
+.c-drop.d3{left:84px;top:356px;width:4px;height:4px;opacity:.65}
+.c-drop.d4{left:216px;top:392px;width:3px;height:3px;opacity:.55}
+.c-base{position:relative;z-index:4;width:340px;margin-top:-16px;padding:11px 16px;border-radius:10px;background:linear-gradient(180deg,#2f2b26,#211e1a);box-shadow:0 16px 28px rgba(30,25,15,.22),inset 0 1px 0 rgba(255,255,255,.12);display:flex;place-items:center}
+.c-plaque{width:210px;margin:0 auto;padding:5px 10px 6px;border:1px solid rgba(232,163,61,.42);border-radius:4px;background:linear-gradient(180deg,#3b342a,#2a251f);text-align:center}
+.c-plaque strong{display:block;font-family:var(--serif);font-size:10px;font-weight:500;letter-spacing:.08em;color:#e7c98f}
+.c-plaque em{display:block;margin-top:1px;font-family:var(--serif);font-size:9px;font-style:italic;color:rgba(231,201,143,.66)}
+.c-memory{position:absolute;z-index:6;padding:5px 9px;border:1px solid color-mix(in srgb,var(--teal) 32%,transparent);border-radius:999px;background:color-mix(in srgb,var(--paper2) 84%,transparent);color:var(--ink2);font-size:10.5px;line-height:1.2;white-space:nowrap;box-shadow:0 4px 16px rgba(47,184,166,.10);max-width:150px;overflow:hidden;text-overflow:ellipsis}
+.c-memory.m1{left:170px;top:250px}
+.c-memory.m2{left:36px;top:322px}
+.c-memory.m3{left:188px;top:386px;border-color:color-mix(in srgb,var(--amber) 38%,transparent)}
+.c-meters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;max-width:760px;width:100%;margin:0 auto;padding:12px 0 4px;border-top:1px solid var(--line);flex:none}
+.c-meter-head{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.c-meter-head span{font-size:10.5px;color:var(--ink3)}
+.c-meter-head b{font-size:10.5px;font-weight:500;color:var(--ink2);font-variant-numeric:tabular-nums}
+.c-bar{height:2px;margin-top:6px;background:var(--line);border-radius:2px;overflow:hidden}
+.c-bar i{display:block;height:100%;background:var(--teal);border-radius:2px;transform-origin:left}
+.c-meter:nth-child(1) .c-bar i{background:var(--amber)}
+.c-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:760px;width:100%;margin:8px auto 0;font-size:11px;color:var(--ink3);flex:none}
+.c-foot b{color:var(--ink2);font-weight:500}
+.c-foot button{border:0;background:none;color:var(--ink3);font-size:11px;cursor:pointer;padding:0;font-family:inherit}
+
+.c-drawer{grid-column:1/3;grid-row:3;display:flex;align-items:center;gap:18px;padding:0 24px;border-top:1px solid var(--line);background:var(--paper);cursor:pointer;user-select:none}
+.c-handle{width:22px;height:22px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;color:var(--ink3);font-size:10px}
+.c-drawer strong{font-size:11.5px;font-weight:500;color:var(--ink2)}
+.c-drawer nav{display:flex;gap:4px}
+.c-drawer nav button{height:27px;padding:0 10px;border:0;border-radius:7px;background:transparent;color:var(--ink3);font-size:11px;cursor:pointer;font-family:inherit}
+.c-drawer nav button.active{color:var(--ink);background:rgba(27,27,28,.06)}
+.c-dnote{margin-left:auto;font-size:10.5px;color:var(--ink3);white-space:nowrap}
+
+/* ============================================================
+   3. 建议：标本工作台
+   ============================================================ */
+.n-root{
+  --paper:#f3efe6;--paper2:#fbf8f1;--paper3:#ece6d9;
+  --ink:#1b1b1c;--ink2:#57534b;--ink3:#6d675e;
+  --line:rgba(27,27,28,.12);--line2:rgba(27,27,28,.22);
+  --accent:#2fb8a6;--accent-ink:#13695d;--accent-soft:rgba(47,184,166,.13);
+  --amber:#e8a33d;--amber-ink:#85560f;--amber-soft:rgba(232,163,61,.15);
+  --violet:#8b7cf6;--violet-ink:#5748bd;--violet-soft:rgba(139,124,246,.12);
+  --serif:"Songti SC","Noto Serif SC",Georgia,serif;
+  position:relative;width:100%;height:100%;overflow:hidden;background:
+    radial-gradient(circle at 18% 8%,rgba(232,163,61,.08),transparent 42%),
+    radial-gradient(circle at 86% 82%,rgba(47,184,166,.06),transparent 46%),
+    var(--paper);
+  color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.7;
+}
+.n-root :where(button){font:inherit;color:inherit}
+.n-top{
+  position:relative;display:flex;align-items:center;gap:14px;height:56px;padding:0 20px;
+  border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--paper2) 55%,var(--paper));
+}
+.n-mark{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line2);background:var(--paper2);color:var(--ink2);flex:none}
+.n-brand{display:flex;align-items:baseline;gap:12px;min-width:0}
+.n-brand h1{margin:0;font-family:var(--serif);font-size:19px;font-weight:500;letter-spacing:.01em;line-height:1}
+.n-crumb{font-size:12px;color:var(--ink3);white-space:nowrap}
+.n-topright{display:flex;align-items:center;gap:8px;margin-left:auto}
+.n-maturity{display:flex;align-items:baseline;gap:3px;padding-right:6px}
+.n-maturity b{font-family:var(--serif);font-size:20px;font-weight:500;line-height:1}
+.n-maturity span{font-size:12px;color:var(--ink3)}
+.n-btn{
+  height:36px;padding:0 14px;border-radius:9px;border:1px solid var(--line2);background:transparent;
+  display:inline-flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;
+  transition:background-color .15s,border-color .15s;
+}
+.n-btn:hover{background:rgba(27,27,28,.05)}
+.n-btn:focus-visible,.n-icon:focus-visible,.n-switch:focus-visible,.n-tabs button:focus-visible,.n-del:focus-visible,.n-seg button:focus-visible,.n-link:focus-visible,.n-submit:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
+.n-btn:disabled{opacity:.6;cursor:default}
+.n-btn svg{flex:none}
+.n-icon{width:36px;height:36px;border-radius:9px;border:1px solid transparent;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--ink2)}
+.n-icon:hover{background:rgba(27,27,28,.05);border-color:var(--line)}
+.n-progress{position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--accent);transition:width .5s ease}
+
+.n-body{display:grid;grid-template-columns:300px minmax(0,1fr) 340px;height:calc(100% - 56px)}
+
+/* 标本栏 */
+.n-specimen{
+  display:flex;flex-direction:column;padding:16px 18px 18px;border-right:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(251,248,241,.55),transparent 60%);
+  min-height:0;
+}
+.n-vessel{position:relative;display:flex;flex-direction:column;align-items:center;margin-top:2px}
+.n-jar{
+  position:relative;width:200px;height:286px;border-radius:100px 100px 14px 14px;overflow:hidden;
+  border:1px solid rgba(27,27,28,.2);
+  background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(238,246,244,.12) 30%,rgba(238,246,244,.14) 70%,rgba(255,255,255,.24));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.7),inset 10px 0 18px rgba(255,255,255,.28),inset -10px 0 18px rgba(255,255,255,.1),0 14px 30px rgba(60,50,30,.12);
+  isolation:isolate;
+}
+.n-jar::before{content:"";position:absolute;left:10px;top:22px;bottom:18px;width:14px;border-radius:50%;background:linear-gradient(90deg,rgba(255,255,255,.34),rgba(255,255,255,0));filter:blur(1.5px);z-index:5}
+.n-jar::after{content:"";position:absolute;left:12%;right:12%;top:0;height:30px;border-radius:0 0 50% 50%;border-bottom:1px solid rgba(255,255,255,.5);z-index:5}
+.n-plant{position:absolute;left:50%;bottom:8px;width:176px;transform:translateX(-50%);z-index:2;filter:saturate(.95) drop-shadow(0 10px 14px rgba(30,25,15,.16))}
+.n-water{position:absolute;inset:0;overflow:hidden;z-index:3;pointer-events:none}
+.n-water-body{position:absolute;inset:0;transform:translateY(calc(100% - var(--lvl,13.4%)));background:linear-gradient(180deg,rgba(47,184,166,.2),rgba(47,184,166,.05));transition:transform .8s cubic-bezier(.16,1,.3,1)}
+.n-water-body::before{content:"";position:absolute;left:-6%;right:-6%;top:-1px;height:1px;background:var(--accent);opacity:.45}
+.n-drop{position:absolute;z-index:5;border-radius:50%;background:rgba(255,255,255,.6);box-shadow:0 1px 2px rgba(30,25,15,.12),inset 0 1px 1px rgba(255,255,255,.8)}
+.n-drop.d1{left:40px;top:120px;width:4px;height:4px}
+.n-drop.d2{left:150px;top:160px;width:3px;height:3px;opacity:.7}
+.n-drop.d3{left:60px;top:224px;width:3px;height:3px;opacity:.6}
+.n-base{width:232px;margin-top:-9px;padding:7px 10px;border-radius:8px;background:linear-gradient(180deg,#2f2b26,#211e1a);box-shadow:0 12px 22px rgba(30,25,15,.2),inset 0 1px 0 rgba(255,255,255,.12);z-index:4}
+.n-plaque{width:100%;padding:4px 8px 5px;border:1px solid rgba(232,163,61,.4);border-radius:3px;background:linear-gradient(180deg,#3b342a,#2a251f);text-align:center}
+.n-plaque strong{display:block;font-family:var(--serif);font-size:9.5px;font-weight:500;letter-spacing:.1em;color:#e7c98f}
+.n-plaque em{display:block;margin-top:1px;font-family:var(--serif);font-size:9px;font-style:italic;color:rgba(231,201,143,.72)}
+.n-score{display:flex;align-items:flex-end;justify-content:space-between;margin-top:14px}
+.n-score-label{font-size:12px;color:var(--ink3)}
+.n-score b{font-family:var(--serif);font-size:30px;font-weight:400;line-height:.9}
+.n-score b small{font-size:13px;color:var(--ink3);margin-left:1px}
+.n-dims{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.n-dims li{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:8px}
+.n-dims span{font-size:12px;color:var(--ink3)}
+.n-dims b{font-size:12px;font-weight:500;color:var(--ink2);font-variant-numeric:tabular-nums}
+.n-dims i{grid-column:2/4;height:4px;border-radius:2px;background:rgba(27,27,28,.08);position:relative;overflow:hidden}
+.n-dims i::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--v);background:var(--dim-color,var(--accent));border-radius:2px}
+.n-dims li:nth-child(1) i{--dim-color:var(--amber)}
+.n-learned{margin-top:auto;padding:10px 0 2px 11px;border-left:2px solid var(--accent)}
+.n-learned span{display:block;font-size:11px;letter-spacing:.1em;color:var(--ink3)}
+.n-learned p{margin:4px 0 0;font-size:13px;line-height:1.6;color:var(--ink)}
+
+/* 喂养台 */
+.n-composer{display:flex;flex-direction:column;min-height:0;padding:20px 26px 0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(27,27,28,.18) transparent}
+.n-chead{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.n-chead h2{margin:0;font-size:16px;font-weight:600;letter-spacing:.01em}
+.n-chead p{margin:3px 0 0;font-size:12.5px;color:var(--ink3)}
+.n-seg{display:inline-flex;padding:3px;border-radius:9px;background:rgba(27,27,28,.06);flex:none}
+.n-seg button{border:0;background:none;font-size:12.5px;padding:5px 11px;border-radius:6px;cursor:pointer;color:var(--ink3)}
+.n-seg button.on{background:var(--paper2);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.n-label{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:12px;color:var(--ink3);margin:0 0 6px}
+.n-label>span{font-size:12px;color:var(--ink3)}
+.n-input{width:100%;height:38px;padding:0 12px;border:1px solid var(--line);border-radius:9px;background:var(--paper2);color:var(--ink);font:14px/1.4 var(--sans);outline:none;margin-bottom:14px}
+.n-input::placeholder,.n-textarea::placeholder{color:var(--ink3);opacity:.9}
+.n-input:focus,.n-textarea:focus{border-color:var(--accent-ink);box-shadow:0 0 0 3px rgba(19,105,93,.12)}
+.n-label-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+.n-label-row .n-label{margin:0}
+.n-count{font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.n-count b{color:var(--ink2);font-weight:500}
+.n-editor{position:relative}
+.n-textarea{
+  display:block;width:100%;height:168px;padding:13px 14px 34px;border:1px solid var(--line);border-radius:10px;
+  background:var(--paper2);color:var(--ink);font:14px/1.85 var(--sans);outline:none;resize:none;
+}
+.n-efoot{position:absolute;left:12px;right:12px;bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.n-link{border:0;background:none;padding:0;font-size:12px;color:var(--ink2);cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.n-link:hover{color:var(--ink)}
+.n-kbd{font-size:11px;color:var(--ink3);border:1px solid var(--line);border-radius:4px;padding:1px 5px;background:var(--paper)}
+.n-submit-row{display:flex;align-items:center;gap:12px;margin-top:14px}
+.n-submit{height:40px;padding:0 18px;border-radius:10px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);font-size:14px;display:inline-flex;align-items:center;gap:9px;cursor:pointer}
+.n-submit:hover{background:#34302c}
+.n-note{font-size:12px;color:var(--ink3)}
+.n-hr{height:1px;background:var(--line);margin:22px 0 14px}
+.n-lhead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px}
+.n-lhead h3{margin:0;font-size:13px;font-weight:600;color:var(--ink2)}
+.n-lhead span{font-size:12px;color:var(--ink3)}
+.n-list{list-style:none;margin:0;padding:0 0 16px}
+.n-row{display:flex;align-items:center;gap:12px;min-height:54px;padding:8px 0;border-bottom:1px solid rgba(27,27,28,.08)}
+.n-tag{flex:none;font-size:11px;line-height:1.5;padding:2px 7px;border-radius:5px;letter-spacing:.02em}
+.n-tag-corpus{color:var(--accent-ink);background:var(--accent-soft)}
+.n-tag-correction{color:var(--amber-ink);background:var(--amber-soft)}
+.n-tag-note{color:var(--violet-ink);background:var(--violet-soft)}
+.n-rmain{min-width:0;flex:1}
+.n-rmain b{display:block;font-size:13.5px;font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.n-rmain span{display:block;font-size:12px;color:var(--ink3)}
+.n-del{
+  width:30px;height:30px;flex:none;display:grid;place-items:center;border-radius:8px;border:1px solid transparent;
+  background:transparent;color:var(--ink3);cursor:pointer;opacity:.55;transition:opacity .15s,background-color .15s,color .15s;
+}
+.n-row:hover .n-del,.n-del:focus-visible{opacity:1}
+.n-del:hover{background:var(--violet-soft);color:var(--violet-ink)}
+
+/* 档案栏 */
+.n-archive{display:flex;flex-direction:column;min-height:0;border-left:1px solid var(--line);background:color-mix(in srgb,var(--paper2) 45%,transparent)}
+.n-ahead{display:flex;align-items:center;gap:10px;padding:18px 18px 10px}
+.n-ahead h2{margin:0;font-size:15px;font-weight:600}
+.n-pending{margin-left:auto;font-size:11px;padding:2px 8px;border-radius:999px;color:var(--amber-ink);background:var(--amber-soft);white-space:nowrap}
+.n-tabs{display:flex;gap:16px;padding:0 18px;border-bottom:1px solid var(--line);flex:none}
+.n-tabs button{position:relative;border:0;background:none;padding:0 0 9px;font-size:13px;color:var(--ink3);cursor:pointer}
+.n-tabs button b{font-weight:500;color:var(--ink3);font-size:11px;margin-left:2px}
+.n-tabs button.on{color:var(--ink);font-weight:500}
+.n-tabs button.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--ink)}
+.n-panel{flex:1;min-height:0;overflow-y:auto;padding:14px 18px 20px;scrollbar-width:thin;scrollbar-color:rgba(27,27,28,.18) transparent}
+.n-group{margin-bottom:16px}
+.n-group h4{margin:0 0 8px;font-size:11px;letter-spacing:.1em;color:var(--ink3);font-weight:500}
+.n-group h4 span{font-weight:400;color:var(--ink3)}
+.n-rule{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:color-mix(in srgb,var(--paper) 65%,transparent)}
+.n-rtop{display:flex;align-items:center;gap:8px}
+.n-src{font-size:10.5px;padding:1px 6px;border-radius:4px;line-height:1.6}
+.n-src.local{color:var(--accent-ink);background:var(--accent-soft)}
+.n-src.deep{color:var(--violet-ink);background:var(--violet-soft)}
+.n-src.manual{color:var(--amber-ink);background:var(--amber-soft)}
+.n-switch{width:34px;height:20px;margin-left:auto;border-radius:999px;border:1px solid var(--line2);background:rgba(27,27,28,.08);position:relative;cursor:pointer;padding:0;flex:none;transition:background-color .15s,border-color .15s}
+.n-switch::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--paper2);box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
+.n-switch.on{background:var(--accent-ink);border-color:var(--accent-ink)}
+.n-switch.on::after{transform:translateX(14px)}
+.n-rule p{margin:7px 0 0;font-size:13px;line-height:1.65;color:var(--ink)}
+.n-rule q{quotes:none;margin:6px 0 0;display:block;font-size:12px;line-height:1.6;color:var(--ink3);border-left:1px solid var(--line2);padding-left:8px}
+.n-pre{margin:0;padding:11px 12px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink2);font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;max-height:300px;overflow:auto}
+.n-t-row{display:flex;align-items:center;gap:8px;margin:10px 0 6px;font-size:12px;color:var(--ink3)}
+.n-dirty{width:6px;height:6px;border-radius:50%;background:var(--amber-ink)}
+.n-testout{min-height:88px;margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--paper);font-size:13px;line-height:1.7;color:var(--ink2)}
+.n-toast{
+  position:absolute;left:50%;bottom:22px;transform:translate(-50%,8px);
+  max-width:calc(100% - 60px);padding:9px 14px;border-radius:9px;border:1px solid var(--line2);
+  background:var(--paper2);color:var(--ink);font-size:13px;box-shadow:0 12px 26px rgba(0,0,0,.16);
+  opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:20;white-space:nowrap;
+}
+.n-toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.n-undo{margin-left:10px;border:0;background:none;color:var(--accent-ink);font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+
+/* ============================================================
+   4. 差异表
+   ============================================================ */
+.diff{max-width:1220px;margin:0 auto;padding:8px 26px 10px}
+.diff h2{font-family:var(--serif);font-size:20px;font-weight:500;margin:0 0 4px}
+.diff .sub{margin:0 0 16px;font-size:13px;color:var(--d-ink2)}
+.diff table{width:100%;border-collapse:collapse;background:var(--d-panel);border:1px solid var(--d-line);border-radius:12px;overflow:hidden}
+.diff th,.diff td{text-align:left;padding:10px 12px;vertical-align:top;border-bottom:1px solid var(--d-line);font-size:13px}
+.diff th{font-size:11.5px;letter-spacing:.04em;color:var(--d-ink3);font-weight:500;background:rgba(26,25,23,.03)}
+.diff tr:last-child td{border-bottom:0}
+.diff tbody tr{cursor:pointer}
+.diff tbody tr:hover{background:rgba(232,163,61,.09)}
+.diff td.num{width:34px;font-family:var(--serif);font-size:14px;color:var(--d-ink3)}
+.diff td.now{color:#7a4a22;width:31%}
+.diff td.next{width:36%}
+.diff td.why{color:var(--d-ink2);font-size:12.5px;width:22%}
+.diff code{font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:rgba(26,25,23,.06);padding:1px 4px;border-radius:4px}
+.diff .more{margin:14px 0 0;padding:14px 16px;border:1px dashed var(--d-line2);border-radius:10px;background:rgba(251,248,241,.5)}
+.diff .more h3{margin:0 0 6px;font-size:12.5px;letter-spacing:.02em}
+.diff .more ul{margin:0;padding-left:18px;color:var(--d-ink2);font-size:13px}
+.diff .more li{margin:4px 0}
+.foot{max-width:1220px;margin:0 auto;padding:10px 26px 40px;font-size:12px;color:var(--d-ink3)}
+
+@media (max-width:1180px){
+  .board{flex-direction:column}
+  .board.single .pane{max-width:none}
+  .diff td.now,.diff td.next,.diff td.why{width:auto}
+  .diff table,.diff thead,.diff tbody,.diff tr,.diff td,.diff th{display:block}
+  .diff thead{display:none}
+  .diff tbody tr{border-bottom:1px solid var(--d-line);padding:6px 0}
+  .diff td{border:0;padding:3px 12px}
+}
+.n-rule q::before,.n-rule q::after{content:none}
+</style>
+</head>
+<body data-view="stack" class="show-zones">
+
+<header class="topbar">
+  <div class="tb-brand"><b>语感花房</b><span>前端 UI / 交互对照评审</span></div>
+  <div class="seg" role="group" aria-label="查看模式">
+    <button data-view="stack" class="on">上下对照</button>
+    <button data-view="both">并排</button>
+    <button data-view="cur">只看现状</button>
+    <button data-view="new">只看建议</button>
+  </div>
+  <label class="tgl"><input type="checkbox" id="tZones" checked><span>分区占比</span></label>
+  <label class="tgl"><input type="checkbox" id="tPins" checked><span>差异标注</span></label>
+</header>
+
+<section class="lead">
+  <h1>同一套气质，换一套工作台</h1>
+  <p>保留：暖纸色、衬线数字、玻璃标本的隐喻。要改的是三件事——把「写」放回视觉中心，把「规则」从抽屉里拿到台面，把 10px 的字和 2:1 的对比度修到能读。</p>
+  <div class="stats">
+    <span class="warn"><b>56%</b> 面积给了装饰</span>
+    <span class="warn"><b>29%</b> 面积留给写作</span>
+    <span class="warn"><b>3.11:1</b> 次级文字对比度</span>
+    <span class="warn"><b>2.15:1</b> 青色标签对比度</span>
+    <span><b>10px</b> 最小标签字号</span>
+    <span><b>28×16</b> 开关命中区</span>
+  </div>
+</section>
+
+<main class="board" id="board">
+
+  <!-- ================= 现状 ================= -->
+  <section class="pane" data-pane="cur">
+    <div class="pane-head"><b>现状</b><span>400px 喂养台 + 大舞台 + 48px 抽屉</span><span class="tag">v0.1</span></div>
+    <div class="legend"><span><i style="background:#13695d"></i>操作 400 · 29%</span><span><i style="background:#5b4bc4"></i>装饰 780 · 56%</span><span><i style="background:#8a3d12"></i>输出 48px · 折叠</span></div>
+    <div class="viewport">
+      <div class="frame c-frame" id="frameCur">
+        <div class="c-root">
+          <div class="c-app">
+            <header class="c-top">
+              <div class="c-brand">
+                <span class="c-mark" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5.2 8.4V15c0 1 .8 1.8 1.8 1.8h6c1 0 1.8-.8 1.8-1.8V8.4M4.2 8.4h11.6M10 8.4V5.6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M10 6.4c-1.8 0-3-1-3-2.4 1.8 0 3 .9 3 2.4Z" fill="currentColor" opacity=".6"/></svg>
+                </span>
+                <div><h1>语感花房</h1><p>Specimen 001 · 你的语气</p></div>
+              </div>
+              <div class="c-topright">
+                <span class="c-status"><b>8</b> 条规则 · 深读 <b>1</b> 版</span>
+                <button class="c-btn icon" aria-label="设置">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3.2h10M2 7h10M2 10.8h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".6"/><circle cx="5" cy="3.2" r="1.5" fill="#f3efe6" stroke="currentColor" stroke-width="1.2"/><circle cx="9" cy="7" r="1.5" fill="#f3efe6" stroke="currentColor" stroke-width="1.2"/><circle cx="4" cy="10.8" r="1.5" fill="#f3efe6" stroke="currentColor" stroke-width="1.2"/></svg>
+                </button>
+                <button class="c-btn primary small">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="6.1" cy="6.1" r="3.9" stroke="currentColor" stroke-width="1.3"/><path d="m9.2 9.2 2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                  深读
+                </button>
+              </div>
+            </header>
+
+            <aside class="c-feed">
+              <div class="c-tabs" role="tablist">
+                <button class="c-tab active" role="tab" aria-selected="true">语料</button>
+                <button class="c-tab" role="tab">纠正</button>
+                <button class="c-tab" role="tab">直给</button>
+              </div>
+
+              <div class="c-label">标题（可选）</div>
+              <input class="c-input" value="关于缓存选型的一段回复" aria-label="标题">
+
+              <div class="c-label">正文 <span>186 字</span></div>
+              <div class="c-editor">
+                <textarea class="c-textarea" aria-label="正文">直接选 Redis 就行。现在基本没有单独引入 Memcached 的理由了，除非你只是单纯做超大并发的极简 Key-Value 缓存，且极度在意多线程模型。Redis 数据结构丰富，社区也成熟得多，后续要做计数器、分布式锁都能复用。</textarea>
+                <div class="c-eactions"><button class="c-link">从文件导入</button></div>
+                <span class="c-char">186 / 20000</span>
+              </div>
+
+              <button class="c-btn primary c-pour">
+                <span class="left">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.8S3.6 7.1 3.6 9.6a4.4 4.4 0 0 0 8.8 0C12.4 7.1 8 1.8 8 1.8Z" stroke="currentColor" stroke-width="1.2"/></svg>
+                  开始滋养
+                </span>
+                <span class="delta">本地即时</span>
+              </button>
+              <p class="c-hint">再补 2–3 段“AI 原稿 → 你的改写”。</p>
+
+              <div class="c-recent">
+                <div class="c-rhead"><h2>最近投喂</h2><span>6 条</span></div>
+                <div class="c-item">
+                  <span class="c-badge corpus">语料</span>
+                  <div><strong>关于缓存选型的一段回复</strong><em>186 字 · 3 分钟前</em></div>
+                  <button class="c-x" aria-label="删除">×</button>
+                </div>
+                <div class="c-item">
+                  <span class="c-badge correction">纠正</span>
+                  <div><strong>会议纪要改写</strong><em>312 字 · 昨天</em></div>
+                  <button class="c-x" aria-label="删除">×</button>
+                </div>
+                <div class="c-item">
+                  <span class="c-badge note">直给</span>
+                  <div><strong>别用“赋能 / 闭环”</strong><em>12 字 · 昨天</em></div>
+                  <button class="c-x" aria-label="删除">×</button>
+                </div>
+              </div>
+
+              <div class="c-privacy">语料只存在本机 · 深读/试音时才会发送给模型</div>
+            </aside>
+
+            <main class="c-stage">
+              <div class="c-stage-top">
+                <div><span class="c-kicker">成熟度</span><strong class="c-percent">68<small>%</small></strong></div>
+                <div class="c-stagenote">再补 2–3 段“AI 原稿 → 你的改写”</div>
+              </div>
+
+              <div class="c-main">
+                <svg class="c-halo" viewBox="0 0 610 610" aria-hidden="true">
+                  <circle class="orbit" cx="305" cy="305" r="282"/>
+                  <circle class="ticks" cx="305" cy="305" r="269"/>
+                  <circle class="glow" cx="305" cy="305" r="282" pathLength="100" stroke-dasharray="68 100" transform="rotate(-90 305 305)"/>
+                  <circle class="arc" cx="305" cy="305" r="282" pathLength="100" stroke-dasharray="68 100" transform="rotate(-90 305 305)"/>
+                  <circle cx="305" cy="23" r="3.2" fill="#2fb8a6"/>
+                  <circle cx="305" cy="305" r="226" fill="none" stroke="rgba(27,27,28,.13)" stroke-width="1" opacity=".55"/>
+                </svg>
+
+                <div class="c-vessel">
+                  <div class="c-jar">
+                    <div class="c-water" style="--lvl:13.4%"><div class="c-water-body"></div></div>
+                    <img class="c-plant" src="../assets/plant.png" alt="">
+                    <i class="c-drop d1"></i><i class="c-drop d2"></i><i class="c-drop d3"></i><i class="c-drop d4"></i>
+                    <div class="c-memory m1">先给结论</div>
+                    <div class="c-memory m2">删掉客套结尾</div>
+                    <div class="c-memory m3">短句为主</div>
+                  </div>
+                  <div class="c-base"><div class="c-plaque"><strong>SPECIMEN 001</strong><em>你的语气 · 未成形</em></div></div>
+                </div>
+              </div>
+
+              <div class="c-meters">
+                <div class="c-meter"><div class="c-meter-head"><span>语气</span><b>62</b></div><div class="c-bar"><i style="transform:scaleX(.62)"></i></div></div>
+                <div class="c-meter"><div class="c-meter-head"><span>节奏</span><b>71</b></div><div class="c-bar"><i style="transform:scaleX(.71)"></i></div></div>
+                <div class="c-meter"><div class="c-meter-head"><span>用词</span><b>55</b></div><div class="c-bar"><i style="transform:scaleX(.55)"></i></div></div>
+                <div class="c-meter"><div class="c-meter-head"><span>结构</span><b>48</b></div><div class="c-bar"><i style="transform:scaleX(.48)"></i></div></div>
+                <div class="c-meter"><div class="c-meter-head"><span>场景</span><b>40</b></div><div class="c-bar"><i style="transform:scaleX(.40)"></i></div></div>
+              </div>
+              <div class="c-foot"><span>它刚学会：<b>先给结论，再补边界条件</b></span><button>查看规则 →</button></div>
+            </main>
+
+            <footer class="c-drawer">
+              <span class="c-handle" aria-hidden="true">⌃</span>
+              <strong>人格档案</strong>
+              <nav><button class="active">规则 8</button><button>人格提示词</button><button>试音</button></nav>
+              <span class="c-dnote">本地规则即时生效 · 深读结果需确认</span>
+            </footer>
+          </div>
+        </div>
+      </div>
+
+      <div class="overlay">
+        <div class="pins">
+          <button class="pin" data-pin="1" style="" data-target=".c-stage" data-ox=".32" data-oy="-.36" aria-label="问题 1：版面权重">1</button>
+          <button class="pin" data-pin="2" style="" data-target=".c-textarea" data-ox="-.38" data-oy="-.46" aria-label="问题 2：字号">2</button>
+          <button class="pin" data-pin="3" style="" data-target=".c-badge.corpus" data-ox="-.1" data-oy="0" aria-label="问题 3：对比度">3</button>
+          <button class="pin" data-pin="4" style="" data-target=".c-drawer" data-ox="0" data-oy="0" aria-label="问题 4：抽屉折叠">4</button>
+          <button class="pin" data-pin="5" style="" data-target=".c-pour" data-ox="-.5" data-oy="0" aria-label="问题 5：主按钮">5</button>
+          <button class="pin" data-pin="6" style="" data-target=".c-x" data-ox="0" data-oy="0" aria-label="问题 6：删除按钮">6</button>
+          <button class="pin" data-pin="7" style="" data-target=".c-top" data-ox=".2" data-oy="0" aria-label="问题 7：深读反馈">7</button>
+          <button class="pin" data-pin="8" style="" data-target=".c-top" data-ox=".26" data-oy="0" aria-label="问题 8：设置">8</button>
+        </div>
+        <div class="zones">
+          <div class="zone act" style="left:0;top:8%;width:33.33%;height:86%"></div>
+          <div class="zone deco" style="left:33.33%;top:8%;width:66.67%;height:86%"></div>
+          <div class="zone out" style="left:0;top:94%;width:100%;height:6%"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 建议 ================= -->
+  <section class="pane" data-pane="new">
+    <div class="pane-head"><b>建议</b><span>300px 标本 + 写作主栏 + 340px 常驻档案</span><span class="tag">proposal</span></div>
+    <div class="legend"><span><i style="background:#5b4bc4"></i>标本 300 · 23%</span><span><i style="background:#13695d"></i>写作 560 · 43%</span><span><i style="background:#8a3d12"></i>档案 340 · 26%</span></div>
+    <div class="viewport">
+      <div class="frame n-frame" id="frameNew">
+        <div class="n-root">
+          <header class="n-top">
+            <span class="n-mark" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5.2 8.4V15c0 1 .8 1.8 1.8 1.8h6c1 0 1.8-.8 1.8-1.8V8.4M4.2 8.4h11.6M10 8.4V5.6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M10 6.4c-1.8 0-3-1-3-2.4 1.8 0 3 .9 3 2.4Z" fill="currentColor" opacity=".6"/></svg>
+            </span>
+            <div class="n-brand"><h1>语感花房</h1><span class="n-crumb">标本 001 · 你的语气</span></div>
+            <div class="n-topright">
+              <div class="n-maturity"><b id="nPct">68</b><span>% 成形</span></div>
+              <button class="n-btn" id="nDeep">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1.6l1.2 3.4 3.4 1.2-3.4 1.2L7 10.8 5.8 7.4 2.4 6.2l3.4-1.2L7 1.6Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
+                <span>深读</span>
+              </button>
+              <button class="n-icon" aria-label="设置">
+                <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 3.2h10M2 7h10M2 10.8h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".6"/><circle cx="5" cy="3.2" r="1.5" fill="#f3efe6" stroke="currentColor" stroke-width="1.2"/><circle cx="9" cy="7" r="1.5" fill="#f3efe6" stroke="currentColor" stroke-width="1.2"/><circle cx="4" cy="10.8" r="1.5" fill="#f3efe6" stroke="currentColor" stroke-width="1.2"/></svg>
+              </button>
+            </div>
+            <div class="n-progress" id="nProgress" aria-hidden="true"></div>
+          </header>
+
+          <div class="n-body">
+            <aside class="n-specimen" aria-label="标本状态">
+              <div class="n-vessel">
+                <div class="n-jar">
+                  <div class="n-water" style="--lvl:13.4%"><div class="n-water-body" id="nWater"></div></div>
+                  <img class="n-plant" src="../assets/plant.png" alt="玻璃罩里的植株">
+                  <i class="n-drop d1"></i><i class="n-drop d2"></i><i class="n-drop d3"></i>
+                </div>
+                <div class="n-base"><div class="n-plaque"><strong>SPECIMEN 001</strong><em>你的语气 · 未成形</em></div></div>
+              </div>
+
+              <div class="n-score"><span class="n-score-label">成熟度</span><b>68<small>%</small></b></div>
+              <ul class="n-dims">
+                <li><span>语气</span><b>62</b><i style="--v:62%"></i></li>
+                <li><span>节奏</span><b>71</b><i style="--v:71%"></i></li>
+                <li><span>用词</span><b>55</b><i style="--v:55%"></i></li>
+                <li><span>结构</span><b>48</b><i style="--v:48%"></i></li>
+                <li><span>场景</span><b>40</b><i style="--v:40%"></i></li>
+              </ul>
+              <div class="n-learned"><span>它刚学会</span><p>先给结论，再补边界条件。</p></div>
+            </aside>
+
+            <main class="n-composer">
+              <div class="n-chead">
+                <div>
+                  <h2>喂养台</h2>
+                  <p>粘贴你写的东西，或一段你改过的回复。本地分析，不联网。</p>
+                </div>
+                <div class="n-seg" role="tablist" aria-label="投喂类型">
+                  <button class="on" role="tab" aria-selected="true">语料</button>
+                  <button role="tab" aria-selected="false">纠正</button>
+                  <button role="tab" aria-selected="false">直给</button>
+                </div>
+              </div>
+
+              <label class="n-label" for="nTitle">标题 <span>可选</span></label>
+              <input id="nTitle" class="n-input" value="关于缓存选型的一段回复">
+
+              <div class="n-label-row">
+                <label class="n-label" for="nText">正文</label>
+                <span class="n-count"><b id="nCount">186</b> / 20000</span>
+              </div>
+              <div class="n-editor">
+                <textarea id="nText" class="n-textarea">直接选 Redis 就行。现在基本没有单独引入 Memcached 的理由了，除非你只是单纯做超大并发的极简 Key-Value 缓存，且极度在意多线程模型。Redis 数据结构丰富，社区也成熟得多，后续要做计数器、分布式锁都能复用。</textarea>
+                <div class="n-efoot">
+                  <button class="n-link">
+                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M6 8.2 8.2 6a2.4 2.4 0 0 1 3.4 3.4l-1.4 1.4M8 5.8 5.8 8A2.4 2.4 0 0 1 2.4 4.6l1.4-1.4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                    从文件导入
+                  </button>
+                  <span class="n-kbd">⌘ ↵ 提交</span>
+                </div>
+              </div>
+
+              <div class="n-submit-row">
+                <button class="n-submit" id="nSubmit">
+                  开始滋养
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.6 7h8.2M7.4 3.6 10.8 7 7.4 10.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <span class="n-note">只在本地分析 · 立即生效</span>
+              </div>
+
+              <div class="n-hr"></div>
+
+              <div class="n-lhead"><h3>最近投喂</h3><span>6 条 · 1,286 字</span></div>
+              <ul class="n-list" id="nList">
+                <li class="n-row">
+                  <span class="n-tag n-tag-corpus">语料</span>
+                  <div class="n-rmain"><b>关于缓存选型的一段回复</b><span>186 字 · 3 分钟前</span></div>
+                  <button class="n-del" aria-label="删除这条投喂">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.6 3.6h8.8M5.4 3.6V2.4h3.2v1.2M3.8 3.6l.5 7.2c0 .5.4.8.9.8h3.6c.5 0 .9-.3.9-.8l.5-7.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </li>
+                <li class="n-row">
+                  <span class="n-tag n-tag-correction">纠正</span>
+                  <div class="n-rmain"><b>会议纪要改写</b><span>312 字 · 昨天</span></div>
+                  <button class="n-del" aria-label="删除这条投喂">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.6 3.6h8.8M5.4 3.6V2.4h3.2v1.2M3.8 3.6l.5 7.2c0 .5.4.8.9.8h3.6c.5 0 .9-.3.9-.8l.5-7.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </li>
+                <li class="n-row">
+                  <span class="n-tag n-tag-note">直给</span>
+                  <div class="n-rmain"><b>别用“赋能 / 闭环”</b><span>12 字 · 昨天</span></div>
+                  <button class="n-del" aria-label="删除这条投喂">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.6 3.6h8.8M5.4 3.6V2.4h3.2v1.2M3.8 3.6l.5 7.2c0 .5.4.8.9.8h3.6c.5 0 .9-.3.9-.8l.5-7.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </li>
+                <li class="n-row">
+                  <span class="n-tag n-tag-corpus">语料</span>
+                  <div class="n-rmain"><b>复盘：为什么先不上微服务</b><span>248 字 · 前天</span></div>
+                  <button class="n-del" aria-label="删除这条投喂">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.6 3.6h8.8M5.4 3.6V2.4h3.2v1.2M3.8 3.6l.5 7.2c0 .5.4.8.9.8h3.6c.5 0 .9-.3.9-.8l.5-7.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </li>
+              </ul>
+            </main>
+
+            <aside class="n-archive" aria-label="人格档案">
+              <div class="n-ahead"><h2>人格档案</h2><span class="n-pending" id="nPending">1 条待确认</span></div>
+              <div class="n-tabs" role="tablist" aria-label="档案分页">
+                <button class="on" data-tab="rules" role="tab" aria-selected="true">规则 <b>8</b></button>
+                <button data-tab="prompt" role="tab" aria-selected="false">人格</button>
+                <button data-tab="test" role="tab" aria-selected="false">试音</button>
+              </div>
+
+              <div class="n-panel" data-panel="rules">
+                <div class="n-group">
+                  <h4>语气 <span>· 3</span></h4>
+                  <article class="n-rule">
+                    <div class="n-rtop"><span class="n-src local">本地</span><button class="n-switch on" role="switch" aria-checked="true" aria-label="停用这条规则"></button></div>
+                    <p>先给结论，再补边界条件。</p>
+                    <q>“直接选 Redis 就行。”</q>
+                  </article>
+                  <article class="n-rule">
+                    <div class="n-rtop"><span class="n-src manual">直给</span><button class="n-switch on" role="switch" aria-checked="true" aria-label="停用这条规则"></button></div>
+                    <p>别用“赋能 / 闭环 / 抓手”。</p>
+                  </article>
+                </div>
+                <div class="n-group">
+                  <h4>节奏 <span>· 2</span></h4>
+                  <article class="n-rule">
+                    <div class="n-rtop"><span class="n-src deep">深读</span><button class="n-switch on" role="switch" aria-checked="true" aria-label="停用这条规则"></button></div>
+                    <p>长句拆短，一句一个意思。</p>
+                    <q>“拆不是目的，降低变更成本才是。”</q>
+                  </article>
+                </div>
+                <div class="n-group">
+                  <h4>结构 <span>· 2</span></h4>
+                  <article class="n-rule">
+                    <div class="n-rtop"><span class="n-src local">本地</span><button class="n-switch" role="switch" aria-checked="false" aria-label="启用这条规则"></button></div>
+                    <p>少用列表，改成自然段。</p>
+                  </article>
+                </div>
+              </div>
+
+              <div class="n-panel" data-panel="prompt" hidden>
+                <div class="n-t-row">手动补充 <span class="n-dirty" title="未保存"></span><span style="margin-left:auto">未保存</span></div>
+                <pre class="n-pre">你说话直接、务实，不奉承、不绕弯。先给结论，再补必要的边界条件；不确定就说不确定；有更好的方案就直接反驳。
+
+## 说话方式
+- 先给结论，再补边界条件。
+- 别用“赋能 / 闭环 / 抓手”。
+- 长句拆短，一句一个意思。</pre>
+              </div>
+
+              <div class="n-panel" data-panel="test" hidden>
+                <div class="n-label" style="margin-top:2px">场景</div>
+                <div class="n-editor">
+                  <textarea class="n-textarea" style="height:92px;padding-bottom:14px">同事问你为什么不用某个方案……</textarea>
+                </div>
+                <div class="n-submit-row" style="margin-top:10px">
+                  <button class="n-btn">用当前人格回答</button>
+                </div>
+                <div class="n-testout">先问一句：你们现在最怕哪种故障？如果答案是“变更把线上打挂”，那这套方案的问题不在选型，在边界。</div>
+              </div>
+            </aside>
+          </div>
+
+          <div class="n-toast" id="nToast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="overlay">
+        <div class="pins">
+          <button class="pin" data-pin="1" style="" data-target=".n-archive" data-ox="-.5" data-oy=".26" aria-label="改进 1：版面权重">1</button>
+          <button class="pin" data-pin="2" style="" data-target=".n-textarea" data-ox="-.4" data-oy="-.46" aria-label="改进 2：字号">2</button>
+          <button class="pin" data-pin="3" style="" data-target=".n-tag-corpus" data-ox="-.05" data-oy="0" aria-label="改进 3：对比度">3</button>
+          <button class="pin" data-pin="4" style="" data-target=".n-archive" data-ox="-.5" data-oy="-.41" aria-label="改进 4：档案常驻">4</button>
+          <button class="pin" data-pin="5" style="" data-target="#nSubmit" data-ox="-.62" data-oy="0" aria-label="改进 5：主按钮固定">5</button>
+          <button class="pin" data-pin="6" style="" data-target=".n-del" data-ox="0" data-oy="0" aria-label="改进 6：删除按钮">6</button>
+          <button class="pin" data-pin="7" style="" data-target=".n-top" data-ox=".2" data-oy="0" aria-label="改进 7：深读进度">7</button>
+          <button class="pin" data-pin="8" style="" data-target=".n-top" data-ox=".26" data-oy="0" aria-label="改进 8：设置">8</button>
+        </div>
+        <div class="zones">
+          <div class="zone deco" style="left:0;top:7%;width:25%;height:93%"></div>
+          <div class="zone act" style="left:25%;top:7%;width:46.67%;height:93%"></div>
+          <div class="zone out" style="left:71.67%;top:7%;width:28.33%;height:93%"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<section class="diff">
+  <h2>九处需要改的地方</h2>
+  <p class="sub">把鼠标放到表格行上，对应标注会亮起。对比度按 WCAG 2.1 计算，背景取 #f3efe6。</p>
+  <table>
+    <thead>
+      <tr><th>#</th><th>问题</th><th>现状</th><th>建议</th><th>依据</th></tr>
+    </thead>
+    <tbody>
+      <tr data-pin="1">
+        <td class="num">1</td>
+        <td><b>版面权重</b></td>
+        <td class="now">装饰舞台 780×688（65%），写作用 400px（33%），规则藏在 48px 抽屉里。</td>
+        <td class="next">标本 300 / 写作 560 / 档案 340；规则常驻右栏，带待确认角标。</td>
+        <td class="why">用得最多的动作应该占最大的面积。</td>
+      </tr>
+      <tr data-pin="2">
+        <td class="num">2</td>
+        <td><b>字号</b></td>
+        <td class="now">正文 12.8px，标签 10–11.5px，说明 10.5px，占位符更小。</td>
+        <td class="next">正文 14px，标签/说明 12px，数字 20–30px 衬线。</td>
+        <td class="why">12px 以下中文在高 DPI 屏上辨识成本明显上升。</td>
+      </tr>
+      <tr data-pin="3">
+        <td class="num">3</td>
+        <td><b>对比度</b></td>
+        <td class="now"><code>#8d877c</code> 弱文本 3.11:1；青色标签 2.15:1；琥珀标签 1.88:1，全部低于 4.5:1。</td>
+        <td class="next"><code>#6d675e</code> 4.88:1；青色文本 <code>#13695d</code> 5.71:1；琥珀 <code>#85560f</code> 5.49:1。</td>
+        <td class="why">WCAG AA：正文 4.5:1，大字号 3:1。</td>
+      </tr>
+      <tr data-pin="4">
+        <td class="num">4</td>
+        <td><b>规则可见性</b></td>
+        <td class="now">要点 48px 的底部把手，展开后占 46% 高度并盖住舞台。</td>
+        <td class="next">档案常驻右栏，深读结果用角标提示，不遮挡主工作区。</td>
+        <td class="why">输出是产品的核心价值，不该藏在抽屉里。</td>
+      </tr>
+      <tr data-pin="5">
+        <td class="num">5</td>
+        <td><b>主按钮</b></td>
+        <td class="now">「开始滋养」在左栏滚动容器里，内容一多就滚出视口。</td>
+        <td class="next">输入区底部固定按钮，任何时候都在；补 <code>⌘↵</code> 快捷键。</td>
+        <td class="why">设计稿写的是“主按钮始终可见”，实现没做到。</td>
+      </tr>
+      <tr data-pin="6">
+        <td class="num">6</td>
+        <td><b>删除</b></td>
+        <td class="now">14px 的「×」，默认 <code>opacity:0</code>，只有悬停才出现；删除还要 <code>window.confirm</code>。</td>
+        <td class="next">30px 图标常显（悬停加深），删除后给 5 秒「撤销」，不用原生弹窗。</td>
+        <td class="why">触屏没有 hover；14px 命中区远低于 44px。</td>
+      </tr>
+      <tr data-pin="7">
+        <td class="num">7</td>
+        <td><b>深读反馈</b></td>
+        <td class="now">点完只有按钮文案变「深读中」，阶段只写在 <code>title</code> 里，画布无变化。</td>
+        <td class="next">顶栏 2px 进度条 + 三阶段文案 + 完成后的待确认角标。</td>
+        <td class="why">3–8 秒的等待没有可见反馈，用户会重复点击。</td>
+      </tr>
+      <tr data-pin="8">
+        <td class="num">8</td>
+        <td><b>设置</b></td>
+        <td class="now">provider / model 是两个自由文本框，写错了要等深读失败才知道。</td>
+        <td class="next">下拉选择 + 行内校验 + 当前默认值作为占位说明。</td>
+        <td class="why">让人在犯错前就知道范围，而不是犯错后读报错。</td>
+      </tr>
+      <tr data-pin="9">
+        <td class="num">9</td>
+        <td><b>底部碰撞</b></td>
+        <td class="now">1280×800 下，培养舱底座和五维进度条叠在一起（约 15px）。</td>
+        <td class="next">缩小培养舱高度或给 <code>.stage-main</code> 预留底座空间；把 <code>scale</code> 换成会占位的缩放。</td>
+        <td class="why">CSS <code>transform</code> 不改变布局高度，<code>560px</code> 的容器缩到 <code>482px</code> 后仍按原高占位。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="more">
+    <h3>还有 5 处，改动更小但值得一起做</h3>
+    <ul>
+      <li><b>移动端顺序</b>：&lt;860px 先渲染 420px 植物再是输入框，且最近列表二次滚动。建议输入优先、标本折叠成 96px 横条。</li>
+      <li><b>未保存状态</b>：手改人格没有 dirty 提示，切走就静默丢失；建议标题旁一个 6px 琥珀点 + <code>⌘S</code>。</li>
+      <li><b>空态</b>：没有“看示例”，第一屏只有一句提示；建议给 3 条可直接点的示例语料。</li>
+      <li><b>焦点管理</b>：设置弹窗没有焦点陷阱、没有 <code>Esc</code>；键盘用户会被 Tab 到背景内容。</li>
+      <li><b>开关/标签命中区</b>：开关 28×16、tab 高约 27px；建议 44×24 开关、tab 高度 ≥36px，整行可点。</li>
+    </ul>
+  </div>
+</section>
+
+<p class="foot">对照稿是静态复刻，用来讨论版式与交互，不是可以直接合并的实现。所有对比度由 WCAG 2.1 相对亮度公式计算，背景取 <code>#f3efe6</code>。</p>
+
+<script>
+(function(){
+  const body = document.body;
+  const FRAME_W = 1200, FRAME_H = 800;
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+  /* ---------- 视图与缩放 ---------- */
+  function fit(){
+    const view = body.dataset.view || 'stack';
+    const cap = view === 'both' ? 0.6 : 0.96;
+    $$('.pane').forEach((pane) => {
+      if (pane.hidden) return;
+      const vp = $('.viewport', pane);
+      const frame = $('.frame', pane);
+      if (!vp || !frame) return;
+      const s = Math.min(cap, vp.clientWidth / FRAME_W);
+      frame.style.setProperty('--s', s.toFixed(4));
+      vp.style.height = Math.round(FRAME_H * s) + 'px';
+    });
+  }
+
+  /** 把标注点贴到目标元素上：改字号/换视图也不会跑偏。 */
+  function layoutPins(){
+    $$('.pane').forEach((pane) => {
+      if (pane.hidden) return;
+      const vp = $('.viewport', pane);
+      const frame = $('.frame', pane);
+      if (!vp || !frame) return;
+      const vr = vp.getBoundingClientRect();
+      if (vr.width === 0 || vr.height === 0) return;
+      $$('.pin', pane).forEach((pin) => {
+        const selector = pin.dataset.target;
+        if (!selector) return;
+        const el = $(selector, frame);
+        if (!el) return;
+        const box = el.getBoundingClientRect();
+        const ox = Number(pin.dataset.ox || 0);
+        const oy = Number(pin.dataset.oy || 0);
+        const x = box.left + box.width / 2 + ox * box.width;
+        const y = box.top + box.height / 2 + oy * box.height;
+        pin.style.left = ((x - vr.left) / vr.width * 100).toFixed(2) + '%';
+        pin.style.top = ((y - vr.top) / vr.height * 100).toFixed(2) + '%';
+      });
+    });
+  }
+
+  function relayout(){
+    fit();
+    layoutPins();
+  }
+
+  function applyView(){
+    const view = body.dataset.view;
+    const single = view === 'cur' || view === 'new';
+    $$('.pane').forEach((p) => { p.hidden = single && p.dataset.pane !== view; });
+    const board = $('#board');
+    board.classList.toggle('single', single);
+    board.classList.toggle('stack', view === 'stack');
+    relayout();
+    requestAnimationFrame(relayout);
+  }
+
+  $$('[data-view]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      body.dataset.view = btn.dataset.view;
+      $$('[data-view]').forEach((b) => b.classList.toggle('on', b === btn));
+      applyView();
+    });
+  });
+
+  $('#tZones').addEventListener('change', (e) => body.classList.toggle('show-zones', e.target.checked));
+  $('#tPins').addEventListener('change', (e) => body.classList.toggle('no-pins', !e.target.checked));
+  window.addEventListener('resize', relayout);
+
+  // 支持 ?view=cur|new|both|stack，方便单独分享某一版
+  const params = new URLSearchParams(location.search);
+  const initial = params.get('view');
+  if (['stack', 'both', 'cur', 'new'].includes(initial)) {
+    body.dataset.view = initial;
+    $$('[data-view]').forEach((b) => b.classList.toggle('on', b.dataset.view === initial));
+  }
+  applyView();
+
+  /* ---------- 标注与表格联动 ---------- */
+  const pinsOf = (id) => $$('.pin[data-pin="' + id + '"]');
+  $$('.diff tbody tr').forEach((row) => {
+    row.addEventListener('mouseenter', () => pinsOf(row.dataset.pin).forEach((p) => p.classList.add('hot')));
+    row.addEventListener('mouseleave', () => pinsOf(row.dataset.pin).forEach((p) => p.classList.remove('hot')));
+    row.addEventListener('click', () => {
+      const pin = pinsOf(row.dataset.pin)[0];
+      if (pin) pin.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
+  });
+  $$('.pin').forEach((pin) => {
+    pin.addEventListener('click', () => {
+      const row = $('.diff tbody tr[data-pin="' + pin.dataset.pin + '"]');
+      if (row) row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
+  });
+
+  /* ---------- 建议版的交互 ---------- */
+  const nText = $('#nText');
+  const nCount = $('#nCount');
+  const nToast = $('#nToast');
+  let toastTimer = null;
+
+  function toast(html, ms){
+    nToast.innerHTML = html;
+    nToast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => nToast.classList.remove('show'), ms || 3800);
+  }
+
+  function count(){
+    const n = nText.value.replace(/\s+/g, '').length;
+    nCount.textContent = n.toLocaleString('zh-CN');
+  }
+  nText.addEventListener('input', count);
+  count();
+
+  // 档案 tab
+  $$('.n-tabs button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      $$('.n-tabs button').forEach((b) => {
+        const on = b === btn;
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-selected', String(on));
+      });
+      $$('.n-panel').forEach((p) => { p.hidden = p.dataset.panel !== btn.dataset.tab; });
+    });
+  });
+
+  // 规则开关
+  $$('.n-switch').forEach((sw) => {
+    sw.addEventListener('click', () => {
+      const on = sw.classList.toggle('on');
+      sw.setAttribute('aria-checked', String(on));
+    });
+  });
+
+  // 删除 + 撤销
+  const TRASH = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.6 3.6h8.8M5.4 3.6V2.4h3.2v1.2M3.8 3.6l.5 7.2c0 .5.4.8.9.8h3.6c.5 0 .9-.3.9-.8l.5-7.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function bindDelete(btn){
+    btn.addEventListener('click', () => {
+      const row = btn.closest('.n-row');
+      const list = row.parentElement;
+      const next = row.nextElementSibling;
+      const html = row.outerHTML;
+      row.remove();
+      nToast.innerHTML = '已删除 <button class="n-undo" type="button">撤销</button>';
+      nToast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => nToast.classList.remove('show'), 5000);
+      const undo = $('.n-undo', nToast);
+      if (undo) undo.addEventListener('click', () => {
+        const tmp = document.createElement('ul');
+        tmp.innerHTML = html;
+        const restored = tmp.firstElementChild;
+        const del = $('.n-del', restored);
+        if (del) bindDelete(del);
+        list.insertBefore(restored, next);
+        nToast.classList.remove('show');
+      }, { once: true });
+    });
+  }
+  $$('.n-del').forEach(bindDelete);
+
+  // 提交
+  const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  function submit(){
+    const raw = nText.value.trim();
+    if (raw.length < 20) { toast('至少 20 个字才能分析'); nText.focus(); return; }
+    const li = document.createElement('li');
+    li.className = 'n-row';
+    li.innerHTML = '<span class="n-tag n-tag-corpus">语料</span>'
+      + '<div class="n-rmain"><b>' + esc(raw.slice(0, 26)) + (raw.length > 26 ? '…' : '') + '</b>'
+      + '<span>' + raw.length + ' 字 · 刚刚</span></div>'
+      + '<button class="n-del" aria-label="删除这条投喂">' + TRASH + '</button>';
+    $('#nList').prepend(li);
+    bindDelete($('.n-del', li));
+    nText.value = '';
+    count();
+    const pct = $('#nPct');
+    pct.textContent = String(Math.min(99, Number(pct.textContent) + 1));
+    const water = $('#nWater');
+    const now = Math.min(30, 13.4 + 0.8);
+    water.style.setProperty('--lvl', now.toFixed(1) + '%');
+    toast('已记录 · 学会：句子偏短，继续保持');
+  }
+  $('#nSubmit').addEventListener('click', submit);
+  nText.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); submit(); }
+  });
+
+  // 深读阶段
+  $('#nDeep').addEventListener('click', () => {
+    const btn = $('#nDeep');
+    if (btn.dataset.run === '1') return;
+    btn.dataset.run = '1';
+    btn.disabled = true;
+    const label = $('span', btn);
+    const bar = $('#nProgress');
+    const steps = ['读取语料', '提炼', '交叉验证'];
+    bar.style.width = '6%';
+    toast('深读已开始 · 大约 5 秒');
+    let i = 0;
+    const tick = () => {
+      if (i < steps.length) {
+        label.textContent = steps[i];
+        bar.style.width = (18 + i * 26) + '%';
+        i += 1;
+        setTimeout(tick, 760);
+      } else {
+        label.textContent = '深读';
+        btn.disabled = false;
+        btn.dataset.run = '0';
+        bar.style.width = '100%';
+        $('#nPending').textContent = '2 条待确认';
+        toast('深读完成 · 1 条规则待你确认');
+        setTimeout(() => { bar.style.width = '0'; }, 900);
+      }
+    };
+    setTimeout(tick, 700);
+  });
+})();
+</script>
+</body>
+</html>
